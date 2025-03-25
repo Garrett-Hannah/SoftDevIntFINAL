@@ -1,5 +1,6 @@
 package org.example;
 
+import Engine.Graphics.Mesh.Mesh;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -17,7 +18,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class Application {
 
-    private Mesh.Mesh mesh;
+    private Mesh mesh;
 
     private void initMesh() {
         float[] vertices = {
@@ -33,7 +34,7 @@ public class Application {
                 2, 3, 0  // Second triangle
         };
 
-        this.mesh = new Mesh.Mesh(vertices, indices);
+        this.mesh = new Mesh(vertices, indices);
     }
 
 
@@ -77,7 +78,7 @@ public class Application {
 
 
         // Create the window
-        window = glfwCreateWindow(300, 300, "Hello World!", NULL, NULL);
+        window = glfwCreateWindow(600, 600, "Hello World!", NULL, NULL);
         if ( window == NULL )
             throw new RuntimeException("Failed to create the GLFW window");
 

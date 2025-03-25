@@ -1,4 +1,4 @@
-package Mesh;
+package Engine.Graphics.Mesh;
 
 import org.lwjgl.opengl.GL30;
 import java.nio.FloatBuffer;
