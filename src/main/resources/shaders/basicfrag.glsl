@@ -2,10 +2,9 @@
 
 out vec4 FragColor; // Output color
 
-
-uniform vec3 location; // Uniform for location
-
+in vec3 outNorm;
 
 void main() {
-    FragColor = vec4(1.0, 1.0, 0.5, 1.0); // Red color
+    vec3 fragColor = outNorm;
+    FragColor = vec4(outNorm, 1.0); // Red color
 }

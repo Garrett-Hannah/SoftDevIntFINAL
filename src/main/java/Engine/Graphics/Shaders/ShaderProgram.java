@@ -1,5 +1,6 @@
 package Engine.Graphics.Shaders;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import java.io.File;
@@ -83,6 +84,14 @@ public class ShaderProgram {
     public void setUniform(String name, float[] matrix) {
         int location = glGetUniformLocation(programID, name);
         glUniformMatrix4fv(location, false, matrix);
+    }
+
+    public void setUniform4fv(String name, Matrix4f matrix4f)
+    {
+        float arr[] = new float[16];
+        matrix4f.get(arr);
+        int location = glGetUniformLocation(programID, name);
+        glUniformMatrix4fv(location, false, arr);
     }
 
     public int getProgramID() {
