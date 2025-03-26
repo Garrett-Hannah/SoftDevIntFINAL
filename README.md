@@ -1,0 +1,3 @@
+Right now the program only works in the 'KeyboardInput" class under the input package. 
+
+either way try it out and see if it works enough...
