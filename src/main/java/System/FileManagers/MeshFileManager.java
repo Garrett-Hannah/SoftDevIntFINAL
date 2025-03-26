@@ -1,4 +1,4 @@
-package Mesh;
+package System.FileManagers;
 
 import Engine.Graphics.Mesh.Mesh;
 import org.lwjgl.assimp.*;
@@ -9,21 +9,21 @@ import java.util.ArrayList;
 
 import static org.lwjgl.assimp.Assimp.*;
 
-public class MeshManager {
-    private static MeshManager instance;
+public class MeshFileManager {
+    private static MeshFileManager instance;
     private ArrayList<Mesh> meshList;
 
     // Private constructor to prevent instantiation
-    private MeshManager() {
+    private MeshFileManager() {
         meshList = new ArrayList<>();
     }
 
     // Public method to provide access to the single instance
-    public static MeshManager getInstance() {
+    public static MeshFileManager getInstance() {
         if (instance == null) {
-            synchronized (MeshManager.class) {
+            synchronized (MeshFileManager.class) {
                 if (instance == null) {
-                    instance = new MeshManager();
+                    instance = new MeshFileManager();
                 }
             }
         }

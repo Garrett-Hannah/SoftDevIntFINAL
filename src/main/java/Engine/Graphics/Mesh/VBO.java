@@ -8,7 +8,7 @@ import java.nio.FloatBuffer;
 public class VBO
 {
     private final int vboID;
-
+    private final int vertexCount;
 
     public VBO(float[] data)
     {
@@ -16,8 +16,11 @@ public class VBO
         GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, vboID);
 
 
+
         FloatBuffer buffer = BufferUtils.createFloatBuffer(data.length);
         buffer.put(data).flip();
+
+        vertexCount = data.length / 3;
 
         GL30.glBufferData(GL30.GL_ARRAY_BUFFER, buffer, GL30.GL_STATIC_DRAW);
     }

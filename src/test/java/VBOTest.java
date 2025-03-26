@@ -1,3 +1,4 @@
+import Engine.Graphics.Mesh.VAO;
 import Engine.Graphics.Mesh.VBO;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -13,7 +14,7 @@ public class VBOTest {
     private static VBO vbo;
     private static long window;
 
-    final static float[] starVertices = new float[] {
+    public final static float[] starVertices = new float[] {
             // Outer points of the star
             0.0f,  1.0f, 0.0f,   // Top point
             0.2f,  0.3f, 0.0f,   // Right-upper point
@@ -53,6 +54,8 @@ public class VBOTest {
 
         System.out.println("Buffer Size is expected size.");
     }
+
+
 
 
 

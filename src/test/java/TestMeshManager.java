@@ -1,6 +1,6 @@
 import java.io.File;
 
-import Mesh.MeshManager;
+import System.FileManagers.MeshFileManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -10,7 +10,7 @@ import org.lwjgl.glfw.GLFW;
 
 public class TestMeshManager {
 
-    MeshManager MESHMANAGER = MeshManager.getInstance();
+    MeshFileManager MESHMANAGER = MeshFileManager.getInstance();
 
     private static long window;
 
@@ -32,15 +32,15 @@ public class TestMeshManager {
     public void openResourceTest() {
         File objFile = getChessObjDemoFile();
 
-        AIScene scene = MeshManager.loadModel(objFile);
+        AIScene scene = MeshFileManager.loadModel(objFile);
 
         Assertions.assertTrue(scene != null);
     }
 
     @Test
     public void getVertexDataTest() {
-        File objFile = MeshManager.getInstance().getModelFromResources("chess.obj");
-        AIScene model = MeshManager.loadModel(objFile);
+        File objFile = MeshFileManager.getInstance().getModelFromResources("chess.obj");
+        AIScene model = MeshFileManager.loadModel(objFile);
 
         Assertions.assertEquals(model.mNumMeshes(), 1);
         System.out.println(model.mNumMeshes() + " meshes in scene.");
