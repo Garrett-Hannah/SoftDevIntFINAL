@@ -1,38 +1,39 @@
 package Engine.Graphics.Mesh;
 
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL45;
+
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
 
 public class VAO {
 
-    private final int vaoID;
-    private final int vboID;
+    private int vaoID;
 
-
-    public VAO(int vboID)
+    public VAO(float[] data)
     {
-        this.vaoID = GL30.glGenVertexArrays();
-        GL30.glBindVertexArray(vaoID);
+        vaoID = GL45.glGenVertexArrays();
 
-        this.vboID = vboID;
 
-        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, vboID);
 
-        GL30.glVertexAttribPointer(0, 3, GL30.GL_FLOAT, false, 3 * Float.BYTES, 0);
-        GL30.glEnableVertexAttribArray(0);
+        FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(data.length);
+        vertexBuffer.put(data).flip();
 
-        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
-        GL30.glBindVertexArray(0);
+        GL45.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 3 * Float.BYTES,  vertexBuffer);
     }
 
-    public void bind() {
-        GL30.glBindVertexArray(vaoID);
-    }
 
-    public void unbind() {
-        GL30.glBindVertexArray(0);
-    }
 
-    public int getVertexCount() {
+    public void bind()
+    {
 
     }
+
+    public void unbind()
+    {
+
+    }
+
 }

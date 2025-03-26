@@ -1,5 +1,7 @@
 package Engine.Graphics.Shaders;
 
+import org.joml.Vector3f;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -89,5 +91,10 @@ public class ShaderProgram {
 
     public void delete() {
         glDeleteProgram(programID);
+    }
+
+    public void setUniform3f(String name, Vector3f val) {
+        int location = glGetUniformLocation(programID, name);
+        glUniform3f(location, val.x, val.y, val.z);
     }
 }

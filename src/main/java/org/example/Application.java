@@ -34,7 +34,15 @@ public class Application {
                 2, 3, 0  // Second triangle
         };
 
-        this.mesh = new Mesh(vertices, indices);
+        float[] norms = {
+                // Positions (x, y, z)
+                -0.5f, 0.5f, 0.0f,  // Top-left
+                -0.5f, -0.5f, 0.0f, // Bottom-left
+                0.5f, -0.5f, 0.0f,  // Bottom-right
+                0.5f, 0.5f, 0.0f    // Top-right
+        };
+
+        this.mesh = new Mesh(vertices, norms, indices);
     }
 
 
