@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.IntBuffer;
 
+import static org.lwjgl.glfw.GLFW.GLFW_DEPTH_BITS;
+import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 import static org.lwjgl.opengl.GL30.*;
 
 /***
@@ -29,16 +31,21 @@ public class isolateProgramHelper {
         GLFW.glfwInit();
 
         // Create an invisible window
-        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_TRUE);
+        glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_TRUE);
         long window = GLFW.glfwCreateWindow(800, 800, "Window", MemoryUtil.NULL, MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create hidden OpenGL context.");
         }
 
+        glfwWindowHint(GLFW_DEPTH_BITS, 24);
 
 
         GLFW.glfwMakeContextCurrent(window);
         GL.createCapabilities();
+
+        glEnable(GL_CULL_FACE | GL_DEPTH_TEST);
+        glCullFace(GL_BACK);
+        glDepthFunc(GL_LESS);
 
         GL30.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
