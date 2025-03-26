@@ -1,5 +1,6 @@
 package Engine.Graphics.Shaders;
 
+import System.FileManagers.ShaderFileManager;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -105,5 +106,13 @@ public class ShaderProgram {
     public void setUniform3f(String name, Vector3f val) {
         int location = glGetUniformLocation(programID, name);
         glUniform3f(location, val.x, val.y, val.z);
+    }
+
+    public static ShaderProgram getStandardShader()
+    {
+        File frag = ShaderFileManager.getInstance().getFragShader("basicfrag.glsl");
+        File vert = ShaderFileManager.getInstance().getVertexShader("basicvert.glsl");
+
+        return new ShaderProgram(vert, frag);
     }
 }

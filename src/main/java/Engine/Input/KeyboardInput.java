@@ -1,8 +1,16 @@
 package Engine.Input;
 
+import Engine.Graphics.Camera;
+import Engine.Graphics.Mesh.Mesh;
+import Engine.Graphics.Shaders.ShaderProgram;
 import Engine.Graphics.glContextWindow;
+import System.FileManagers.MeshFileManager;
+import org.joml.Matrix4f;
 import org.joml.Vector2i;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWKeyCallback;
+
+import java.io.File;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -26,19 +34,59 @@ public class KeyboardInput {
         glContextWindow win = new glContextWindow(new Vector2i(800, 800));
         KeyboardInput keyboardInput = new KeyboardInput(win); // Ensure callback is set
 
+        File horsie = MeshFileManager.getInstance().getModelFromResources("horsie.obj");
+        Mesh mesh = Mesh.loadMesh(horsie);
+
+        Camera camera = new Camera(90.f, 1.0f, 0.001f, 1000.0f);
+
+        ShaderProgram shaderProgram = ShaderProgram.getStandardShader();
+
+
         while (!glfwWindowShouldClose(win.getWindowID())) {
             glfwPollEvents();
 
             if (keys[GLFW_KEY_W]) {
                 System.out.println("W key is pressed!");
+                camera.move(new Vector3f(0.0f, 0.f, -0.1f));
             }
+
+
+            if (keys[GLFW_KEY_S]) {
+                System.out.println("S key is pressed!");
+                camera.move(new Vector3f(0.0f, 0.f, 0.1f));
+            }
+
+
+            if (keys[GLFW_KEY_A]) {
+                System.out.println("W key is pressed!");
+                camera.move(new Vector3f(-0.10f, 0.f, 0.f));
+            }
+
+
+            if (keys[GLFW_KEY_D]) {
+                System.out.println("S key is pressed!");
+                camera.move(new Vector3f(0.1f, 0.f, 0.0f));
+            }
+
+            //camera.rotate(0.01f, 0.f, 0.f);
 
             if (keys[GLFW_KEY_ESCAPE]) {
                 break;
             }
 
-            win.clear();
+            shaderProgram.use();
+
+            shaderProgram.setUniform4fv("modelMatrix", new Matrix4f().identity().scale(0.2f));
+            shaderProgram.setUniform4fv("viewMatrix", camera.getViewMatrix());
+            shaderProgram.setUniform4fv("projectionMatrix", camera.getProjectionMatrix());
+
+            mesh.render();
+
+            shaderProgram.stop();
+
+
             win.swapBuffers();
+            win.clear();
         }
 
         win.close();

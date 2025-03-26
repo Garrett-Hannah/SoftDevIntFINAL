@@ -1,5 +1,5 @@
-import Engine.Graphics.Mesh.VAO;
-import Engine.Graphics.Mesh.VBO;
+package Graphics;
+
 import Engine.Graphics.Shaders.ShaderProgram;
 import System.FileManagers.ShaderFileManager;
 import org.junit.jupiter.api.Assertions;

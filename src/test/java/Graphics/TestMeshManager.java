@@ -1,13 +1,12 @@
+package Graphics;
+
 import java.io.File;
 
-import Engine.Graphics.Mesh.Mesh;
 import System.FileManagers.MeshFileManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.assimp.AIMesh;
 import org.lwjgl.assimp.AIScene;
 import org.lwjgl.glfw.GLFW;
 
