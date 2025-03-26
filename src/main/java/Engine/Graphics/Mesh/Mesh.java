@@ -12,6 +12,13 @@ import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL30.*;
 
+/**
+ * <h>Mesh Class.</h>
+ *
+ * The mesh class has functionality for
+ * 3d objects that appear in the scene.
+ *
+ */
 public class Mesh {
 
     private int vaoID;
