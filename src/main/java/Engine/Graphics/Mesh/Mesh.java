@@ -1,5 +1,6 @@
 package Engine.Graphics.Mesh;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
@@ -21,6 +22,8 @@ public class Mesh {
     private int vertexCount;
 
     private Vector3f position = new Vector3f(0.f, 0.f, 0.f);
+
+    public Matrix4f modelMatrix = new Matrix4f().identity();
 
     public enum BUFFER_TYPE {
         POS_VB(0),

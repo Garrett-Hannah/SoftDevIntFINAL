@@ -23,7 +23,7 @@ public class glContextWindow {
 
         // Create an invisible window
         glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_TRUE);
-        long window = GLFW.glfwCreateWindow(800, 800, "Window", MemoryUtil.NULL, MemoryUtil.NULL);
+        long window = GLFW.glfwCreateWindow(windowSize.x, windowSize.y, "Window", MemoryUtil.NULL, MemoryUtil.NULL);
         if (window == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create hidden OpenGL context.");
         }
