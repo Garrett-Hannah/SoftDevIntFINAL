@@ -26,9 +26,21 @@ public class Board {
         return this.size;
     }
 
+    public int getNumberOfPieces()
+    {
+        return boardSpace.size();
+    }
+
     public void addPiece(AbstractPiece piece)
     {
-        boardSpace.put(piece.getPosition(), piece);
+        if(!isOccupied(piece.getPosition()))
+            boardSpace.put(piece.getPosition(), piece);
+        else throw new IllegalArgumentException("Invalid Addition Spot. Piece Already Exists @" + boardSpace.get(piece.getPosition()).getPosition().toString());
+    }
+
+    public boolean isOccupied(Position position)
+    {
+        return boardSpace.get(position) != null;
     }
 
     @Override
@@ -54,4 +66,11 @@ public class Board {
             System.out.println("");
         }
     }
+
+    public void clearBoard()
+    {
+        boardSpace = new HashMap<Position, AbstractPiece>();
+    }
+
+
 }

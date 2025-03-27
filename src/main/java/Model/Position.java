@@ -55,7 +55,13 @@ public class Position {
 
     @Override
     public String toString() {
-        return "(" + x + ", " + y + ")";
+        // Convert x to letters A-H
+        char column = (char) ('@' + x);  // Convert the column index to a letter (A-H)
+
+        // Convert y to numbers 1-8
+        int row = y;
+        // Return the position as "A1", "B2", ..., "H8"
+        return column + Integer.toString(row);
     }
 
     public int getY() {
