@@ -1,5 +1,6 @@
 package Model;
 
+import GameUtil.Game;
 import GameUtil.Incrementer;
 
 import java.util.ArrayList;
@@ -16,11 +17,29 @@ public abstract class AbstractPiece {
     {
         this.position = position;
         this.id = Incrementer.getInstance().increment();
+        this.direction = direction;
     }
 
-    List<Position> getValidPositions()
+    //Will need a recursive function to build up all possible moves. going to need a lot of testing for that.
+    public ArrayList<Position> getRecursiveValidPositions()
     {
         return null;
+    }
+
+    //Return the valid positions.
+    public ArrayList<Position> getValidPositions() {
+        Position currentPosition = this.getPosition();
+        Position positionOption1 = currentPosition.getDeltaPosition(1, this.direction.value);
+        Position positionOption2 = currentPosition.getDeltaPosition(-1, this.direction.value);
+
+        Board gameBoard = Game.getInstance().getBoard();
+
+        ArrayList<Position> validPositions = new ArrayList<>();
+
+        if(!gameBoard.isOccupied(positionOption1)) validPositions.add(positionOption1);
+        if(!gameBoard.isOccupied(positionOption2)) validPositions.add(positionOption2);
+
+        return validPositions;
     }
 
     public Position getPosition() {

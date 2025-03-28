@@ -64,6 +64,14 @@ public class Position {
         return column + Integer.toString(row);
     }
 
+    public Position getDeltaPosition(int dx, int dy)
+    {
+        int x = this.getX();
+        int y = this.getY();
+
+        return new Position(x + dx, y + dy);
+    }
+
     public int getY() {
         return this.y;
     }

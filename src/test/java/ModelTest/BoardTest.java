@@ -5,22 +5,34 @@ import Model.Board;
 import Model.AbstractPiece;
 import Model.Position;
 import Model.SerfPiece;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+
+import java.util.ArrayList;
+
 
 public class BoardTest {
 
-
-    @Test
-    void initBoard()
+    @BeforeAll
+    static void initBoard()
     {
         Game.initialize(8);
+    }
 
+    @Test
+    void testBoardInitProper()
+    {
         Assertions.assertEquals(8, Game.getInstance().getBoardHeight(), "Game did not initialize to the expected size.");
     }
 
-    @RepeatedTest(1)  // Use @RepeatedTest(1) because we'll loop through all 64 spots within the test.
+
+    @AfterEach
+    void postTest()
+    {
+
+        Game.getInstance().getBoard().clearBoard();
+    }
+
+    @Test  // Use @RepeatedTest(1) because we'll loop through all 64 spots within the test.
     void placePiece() {
         Board gameBoard = Game.getInstance().getBoard();
 
@@ -67,6 +79,64 @@ public class BoardTest {
                 "Expected addPiece() to throw an exception when trying to add a piece to an occupied spot."
         );
 
-        Assertions.assertEquals("Invalid Addition Spot. Piece Already Exists @" + position.toString(), thrown.getMessage(), "Did not receive the expected result");
+        Assertions.assertEquals("Invalid Addition Spot. Piece Already Exists @" + position, thrown.getMessage(), "Did not receive the expected result");
+
+        gameBoard.clearBoard();
     }
+
+
+    @Test
+    void testGettingValidPositions()
+    {
+        Board gameBoard = Game.getInstance().getBoard();
+
+        SerfPiece myPiece = new SerfPiece(new Position(3, 3), AbstractPiece.PIECE_DIRECTION.FORWARD);
+
+        gameBoard.addPiece(myPiece);
+
+        ArrayList<Position> validMoveSpots = myPiece.getValidPositions();
+
+        Assertions.assertEquals(new Position(4, 4), validMoveSpots.get(0), "Did Not equal expected value.");
+        Assertions.assertEquals(new Position(2, 4), validMoveSpots.get(1), "Did Not equal expected value.");
+    }
+
+    /*
+    Board Setup:
+     oooooooo
+     oooooooo
+     ooooXooo
+     oooXoooo
+     oooooooo
+     */
+    @Test
+    void testGetValidPositionAgainstOtherPiece()
+    {
+        Board gameBoard = Game.getInstance().getBoard();
+
+        SerfPiece protagPiece = new SerfPiece(new Position(3, 3), AbstractPiece.PIECE_DIRECTION.FORWARD);
+
+        //Create secondary piece to check against (should return one valid position) (for now later it will return two)
+        SerfPiece antagPiece = new SerfPiece(new Position(2, 4), AbstractPiece.PIECE_DIRECTION.FORWARD);
+
+        gameBoard.addPiece(protagPiece);
+        gameBoard.addPiece(antagPiece);
+
+        ArrayList<Position> positions = protagPiece.getValidPositions();
+
+        Assertions.assertEquals(1, positions.size(), "Expected only ONE available movement!");
+
+    }
+    
+    /*
+    Board Setup:
+     oooooooo
+     oooooooo
+     ooooXooo
+     oooXoooo
+     oooooooo
+     */
+
+
+
+
 }
