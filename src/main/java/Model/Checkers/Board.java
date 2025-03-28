@@ -51,21 +51,36 @@ public class Board {
                 '}';
     }
 
-    public void printBoard()
-    {
-        for(int i = 0; i < size; i++)
-        {
-            for(int j = 0; j < size; j++)
-            {
-                AbstractPiece piece = (boardSpace.get(new Position(i + 1, j + 1)));
+    public void printBoard() {
+        char[] columns = "abcdefgh".toCharArray(); // Column labels
 
-                if(piece == null) System.out.print("*");
-                else System.out.print(piece.getId());
+        // Print column headers
+        System.out.print("  ");
+        for (char c : columns) {
+            System.out.print(c + " ");
+        }
+        System.out.println();
+
+        // Print rows
+        for (int i = size; i > 0; i--) { // Start from the top row (8 down to 1)
+            System.out.print(i + " "); // Row label
+
+            for (int j = 1; j <= size; j++) { // Columns (1 to 8)
+                AbstractPiece piece = boardSpace.get(new Position(i, j));
+
+                if (piece != null) {
+                    System.out.print(piece.getId() + " "); // Print piece ID
+                } else {
+                    // Alternate between `#` and `.` for checkerboard pattern
+                    if ((i + j) % 2 == 0) System.out.print("# ");
+                    else System.out.print(". ");
+                }
             }
 
-            System.out.println("");
+            System.out.println(); // New line after each row
         }
     }
+
 
     public void clearBoard()
     {

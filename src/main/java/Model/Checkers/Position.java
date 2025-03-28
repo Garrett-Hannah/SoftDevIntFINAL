@@ -71,12 +71,23 @@ public class Position {
         return column + Integer.toString(row);
     }
 
+    /**
+     *
+     * @param dx
+     * @param dy
+     * @return The Value of the new directions added to the thing.
+     */
     public Position getDeltaPosition(int dx, int dy)
     {
         int x = this.getX();
         int y = this.getY();
 
         return new Position(x + dx, y + dy);
+    }
+
+    public Position getDeltaPosition(Vector2i dv)
+    {
+        return getDeltaPosition(dv.x, dv.y);
     }
 
     public int getY() {

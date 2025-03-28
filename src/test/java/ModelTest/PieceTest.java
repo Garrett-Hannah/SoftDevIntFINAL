@@ -1,16 +1,58 @@
 package ModelTest;
 
-import Model.Checkers.Pieces.AbstractPiece.*;
-import Model.Checkers.Position;
+import GameUtil.Game;
+import Model.Checkers.Pieces.AbstractPiece;
 import Model.Checkers.Pieces.SerfPiece;
+import Model.Checkers.Position;
+import Model.Math.Vector2i;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+;
 
 public class PieceTest {
 
-    @Test
-    void testPieceCreation()
+    @BeforeAll
+    static void init()
     {
-        SerfPiece newPiece = new SerfPiece(new Position(1, 1), PIECE_DIRECTION.FORWARD, PEICE_TEAM.WHITE);
+        Game.initialize(8);
     }
 
+
+    @Test
+    void testPieceCreation() {
+        SerfPiece newPiece = new SerfPiece(new Position(1, 1), AbstractPiece.PEICE_TEAM.WHITE);
+        assertNotNull(newPiece, "Piece should be created successfully.");
+    }
+
+    @Test
+    void testPieceInitialPosition() {
+        SerfPiece piece = new SerfPiece(new Position(3, 3), AbstractPiece.PEICE_TEAM.BLACK);
+        assertEquals(3, piece.getPosition().getX());
+        assertEquals(3, piece.getPosition().getY());
+    }
+
+    @Test
+    void testPieceMovement() {
+        SerfPiece piece = new SerfPiece(new Position(2, 2), AbstractPiece.PEICE_TEAM.BLACK);
+        piece.move(new Vector2i(1, 1));  // Assume move() updates position
+        assertEquals(3, piece.getPosition().getX());
+        assertEquals(3, piece.getPosition().getY());
+    }
+
+    @Test
+    void testPieceTeamAssignment() {
+        SerfPiece whitePiece = new SerfPiece(new Position(4, 4), AbstractPiece.PEICE_TEAM.WHITE);
+        SerfPiece blackPiece = new SerfPiece(new Position(5, 5), AbstractPiece.PEICE_TEAM.BLACK);
+
+        assertEquals(AbstractPiece.PEICE_TEAM.WHITE, whitePiece.getTeam());
+        assertEquals(AbstractPiece.PEICE_TEAM.BLACK, blackPiece.getTeam());
+    }
+
+    @Test
+    void testInvalidMovement() {
+        SerfPiece piece = new SerfPiece(new Position(5, 5), AbstractPiece.PEICE_TEAM.WHITE);
+        moveResult = piece.move(new Vector2i(8, 8)); // Assume move() returns false for invalid moves
+        assertFalse(moveResult, "Piece should not be able to move illegally.");
+    }
 }

@@ -4,6 +4,7 @@ import GameUtil.Game;
 import GameUtil.Incrementer;
 import Model.Checkers.Board;
 import Model.Checkers.Position;
+import Model.Math.Vector2i;
 
 import java.util.ArrayList;
 
@@ -19,11 +20,11 @@ public abstract class AbstractPiece {
 
 
 
-    AbstractPiece(Position position, PIECE_DIRECTION direction, PEICE_TEAM team)
+    AbstractPiece(Position position, PEICE_TEAM team)
     {
         this.id = Incrementer.getInstance().increment();
         this.position = position;
-        this.direction = direction;
+        this.direction = (team == PEICE_TEAM.WHITE) ? PIECE_DIRECTION.FORWARD : PIECE_DIRECTION.BACKWARD;
         this.team = team;
     }
 
@@ -55,6 +56,16 @@ public abstract class AbstractPiece {
 
     public int getId() {
         return id;
+    }
+
+    public boolean move(Vector2i delta) {
+        Position current = this.position;
+        current.getDeltaPosition(delta);
+        return false;
+    }
+
+    public PEICE_TEAM getTeam() {
+        return this.team;
     }
 
     //Provides info on the cardinal direction of the piece....
