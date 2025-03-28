@@ -1,6 +1,6 @@
 package NetworkTesting;
 
-import chNetwork.Server.CheckersServerRef;
+import chNetwork.Server.CheckersServer;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import java.io.*;
@@ -16,13 +16,13 @@ public class NetworkChatTest {
     private static final String HOST = "localhost";
 
     //Static server.
-    private static CheckersServerRef server; // Ideal case
+    private static CheckersServer server; // Ideal case
 
     @BeforeAll
     static void startServer() throws IOException {
         System.out.println("Starting server for tests...");
         // In a real scenario, start the server here in a separate thread
-        server = new CheckersServerRef(PORT);
+        server = new CheckersServer(PORT);
 
         server.start();
 

@@ -1,10 +1,10 @@
 package NetworkTesting;
 
 
-import chNetwork.Server.CheckersServerRef;
+import chNetwork.Server.CheckersServer;
 
 public class ServerClientTesting {
 
-    private static CheckersServerRef server;
+    private static CheckersServer server;
 
 }
