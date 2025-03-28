@@ -1,4 +1,4 @@
-package Network;
+package chNetwork;
 
 public class Thread implements Runnable{
     @Override

@@ -1,7 +1,7 @@
-package Model.Checkers;
+package chModel.Checkers;
 
-import GameUtil.Game;
-import Model.Math.Vector2i;
+import chGameUtil.Game;
+import chModel.Math.Vector2i;
 
 import static java.util.Objects.hash;
 

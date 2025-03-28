@@ -1,5 +1,7 @@
 package server;
 
+import chModel.Checkers.Board;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -7,6 +9,10 @@ import java.util.*;
 public class CheckersServer {
     private static final Set<ClientHandler> clientHandlers = new HashSet<>();
     private static final Map<String, ClientHandler> clients = new HashMap<>();
+
+
+    private static final Board activeBoard;
+
 
     public static void main(String[] args) throws IOException {
         final int PORT = 5000;
@@ -46,8 +52,6 @@ public class CheckersServer {
                 {
                     clients.put(username, clientHandler);
                 }
-
-
 
                 // Send list of connected clients and their names
                 StringBuilder clientsList = new StringBuilder("Connected users: \n");

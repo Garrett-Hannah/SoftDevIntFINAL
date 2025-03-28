@@ -1,6 +1,6 @@
-package GameUtil;
+package chGameUtil;
 
-import Model.Checkers.Board;
+import chModel.Checkers.Board;
 
 public class Game {
     private static Game instance;
@@ -38,6 +38,19 @@ public class Game {
 
     public Board getBoard() {
         return gameBoard;
+    }
+
+
+    //CLose out the board and reset the instance to nulllllllllllllllllllllll
+    public void closeBoard()
+    {
+        if(gameBoard != null)
+        {
+            gameBoard.clearBoard();
+            gameBoard = null;
+        }
+
+        instance = null;
     }
 }
 

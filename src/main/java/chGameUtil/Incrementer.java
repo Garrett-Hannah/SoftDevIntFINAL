@@ -1,4 +1,4 @@
-package GameUtil;
+package chGameUtil;
 
 public class Incrementer {
     private static Incrementer instance;

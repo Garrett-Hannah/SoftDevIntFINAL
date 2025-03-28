@@ -1,4 +1,4 @@
-package org.example;
+package chProgram;
 
 
 class Application{

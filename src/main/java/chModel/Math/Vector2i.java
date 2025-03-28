@@ -1,4 +1,4 @@
-package Model.Math;
+package chModel.Math;
 
 public class Vector2i {
     public int x, y;

@@ -1,10 +1,10 @@
-package Model.Checkers.Pieces;
+package chModel.Checkers.Pieces;
 
-import GameUtil.Game;
-import GameUtil.Incrementer;
-import Model.Checkers.Board;
-import Model.Checkers.Position;
-import Model.Math.Vector2i;
+import chGameUtil.Game;
+import chGameUtil.Incrementer;
+import chModel.Checkers.Board;
+import chModel.Checkers.Position;
+import chModel.Math.Vector2i;
 
 import java.util.ArrayList;
 

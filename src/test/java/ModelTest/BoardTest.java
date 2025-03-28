@@ -1,10 +1,10 @@
 package ModelTest;
 
-import GameUtil.Game;
-import Model.Checkers.Board;
-import Model.Checkers.Pieces.AbstractPiece;
-import Model.Checkers.Position;
-import Model.Checkers.Pieces.SerfPiece;
+import chGameUtil.Game;
+import chModel.Checkers.Board;
+import chModel.Checkers.Pieces.AbstractPiece;
+import chModel.Checkers.Position;
+import chModel.Checkers.Pieces.SerfPiece;
 import org.junit.jupiter.api.*;
 
 import java.util.ArrayList;
@@ -160,6 +160,12 @@ public class BoardTest {
         System.out.println("Test Passed.");
 
         gameBoard.printBoard();
+    }
+
+    @AfterAll
+    static void breakDown()
+    {
+        Game.getInstance().closeBoard();
     }
 
     /*

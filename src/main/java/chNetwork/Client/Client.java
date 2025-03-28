@@ -1,4 +1,4 @@
-package Network.Client;
+package chNetwork.Client;
 
 import javax.swing.*;
 import java.awt.*;

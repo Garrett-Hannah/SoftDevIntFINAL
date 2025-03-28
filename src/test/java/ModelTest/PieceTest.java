@@ -1,10 +1,11 @@
 package ModelTest;
 
-import GameUtil.Game;
-import Model.Checkers.Pieces.AbstractPiece;
-import Model.Checkers.Pieces.SerfPiece;
-import Model.Checkers.Position;
-import Model.Math.Vector2i;
+import chGameUtil.Game;
+import chModel.Checkers.Pieces.AbstractPiece;
+import chModel.Checkers.Pieces.SerfPiece;
+import chModel.Checkers.Position;
+import chModel.Math.Vector2i;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -63,5 +64,12 @@ public class PieceTest {
         assertThrows(IllegalArgumentException.class, () -> {
             piece.move(new Vector2i(8, 8));
         }, "Piece should throw an exception for illegal moves.");
+    }
+
+
+    @AfterAll
+    static void breakDown()
+    {
+        Game.getInstance().closeBoard();
     }
 }

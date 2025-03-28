@@ -1,6 +1,6 @@
-package Model.Checkers;
+package chModel.Checkers;
 
-import Model.Checkers.Pieces.AbstractPiece;
+import chModel.Checkers.Pieces.AbstractPiece;
 
 import java.util.HashMap;
 

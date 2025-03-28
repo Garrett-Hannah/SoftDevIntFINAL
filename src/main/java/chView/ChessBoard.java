@@ -1,4 +1,4 @@
-package ViewModel;
+package chView;
 
 public class ChessBoard {
 }
