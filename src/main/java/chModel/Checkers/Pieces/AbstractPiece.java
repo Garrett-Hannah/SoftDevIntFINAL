@@ -2,7 +2,7 @@ package chModel.Checkers.Pieces;
 
 import chGameUtil.BoardHelperSingleton;
 import chGameUtil.IncrementerSingleton;
-import chModel.Checkers.Board;
+import chModel.Checkers.BoardModel;
 import chModel.Checkers.Position;
 import chModel.Math.Vector2i;
 
@@ -40,12 +40,12 @@ public abstract class AbstractPiece {
         Position positionOption1 = currentPosition.getDeltaPosition(1, this.direction.value);
         Position positionOption2 = currentPosition.getDeltaPosition(-1, this.direction.value);
 
-        Board gameBoard = BoardHelperSingleton.getInstance().getBoard();
+        BoardModel gameBoardModel = BoardHelperSingleton.getInstance().getBoard();
 
         ArrayList<Position> validPositions = new ArrayList<>();
 
-        if(!gameBoard.isOccupied(positionOption1)) validPositions.add(positionOption1);
-        if(!gameBoard.isOccupied(positionOption2)) validPositions.add(positionOption2);
+        if(!gameBoardModel.isOccupied(positionOption1)) validPositions.add(positionOption1);
+        if(!gameBoardModel.isOccupied(positionOption2)) validPositions.add(positionOption2);
 
         return validPositions;
     }
@@ -101,9 +101,9 @@ public abstract class AbstractPiece {
 
     public boolean isValidMove(Position position)
     {
-        Board gameBoard = BoardHelperSingleton.getInstance().getBoard();
+        BoardModel gameBoardModel = BoardHelperSingleton.getInstance().getBoard();
 
-        return !gameBoard.isOccupied(position);
+        return !gameBoardModel.isOccupied(position);
     }
 }
 

@@ -1,14 +1,15 @@
 package chGameUtil;
 
-import chModel.Checkers.Board;
+import chModel.Checkers.BoardModel;
+import chModel.Checkers.Position;
 
 public class BoardHelperSingleton {
     private static BoardHelperSingleton instance;
-    private Board gameBoard;
+    private BoardModel gameBoardModel;
 
     // Private constructor to prevent external instantiation
     private BoardHelperSingleton(int boardSize) {
-        this.gameBoard = new Board(boardSize);
+        this.gameBoardModel = new BoardModel(boardSize);
     }
 
     // Method to initialize the instance
@@ -29,25 +30,26 @@ public class BoardHelperSingleton {
     }
 
     public int getBoardWidth() {
-        return gameBoard.getWidth();
+        return gameBoardModel.getWidth();
     }
 
     public int getBoardHeight() {
-        return gameBoard.getHeight();
+        return gameBoardModel.getHeight();
     }
 
-    public Board getBoard() {
-        return gameBoard;
+
+    public BoardModel getBoard() {
+        return gameBoardModel;
     }
 
 
     //CLose out the board and reset the instance to nulllllllllllllllllllllll
     public void closeBoard()
     {
-        if(gameBoard != null)
+        if(gameBoardModel != null)
         {
-            gameBoard.clearBoard();
-            gameBoard = null;
+            gameBoardModel.clearBoard();
+            gameBoardModel = null;
         }
 
         instance = null;

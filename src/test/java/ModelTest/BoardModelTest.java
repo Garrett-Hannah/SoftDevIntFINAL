@@ -1,7 +1,7 @@
 package ModelTest;
 
 import chGameUtil.BoardHelperSingleton;
-import chModel.Checkers.Board;
+import chModel.Checkers.BoardModel;
 import chModel.Checkers.Pieces.AbstractPiece;
 import chModel.Checkers.Position;
 import chModel.Checkers.Pieces.SerfPiece;
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.*;
 import java.util.ArrayList;
 
 
-public class BoardTest {
+public class BoardModelTest {
 
     private static final boolean Verbose = false;
 
@@ -39,7 +39,7 @@ public class BoardTest {
 
         System.out.println("Function Test::" + new Object(){}.getClass().getEnclosingMethod().getName());
 
-        Board gameBoard = BoardHelperSingleton.getInstance().getBoard();
+        BoardModel gameBoardModel = BoardHelperSingleton.getInstance().getBoard();
 
         // Loop through all 8x8 positions on the board (assuming 8x8 grid)
         for (int x = 0; x < 8; x++) {
@@ -48,23 +48,23 @@ public class BoardTest {
                 SerfPiece newPiece = new SerfPiece(new Position(x + 1, y + 1), AbstractPiece.PEICE_TEAM.WHITE);
 
                 // Add the piece to the board
-                gameBoard.addPiece(newPiece);
+                gameBoardModel.addPiece(newPiece);
 
                 // Assert that the piece was added
                 Assertions.assertEquals(
                         (x * 8 + y + 1), // The number of pieces should match the current piece count
-                        gameBoard.getNumberOfPieces(),
+                        gameBoardModel.getNumberOfPieces(),
                         "Error: Number of pieces on board not incremented correctly at position (" + x + ", " + y + ")."
                 );
             }
         }
 
-        gameBoard.printBoard();
+        gameBoardModel.printBoard();
 
 
         System.out.println("Test Passed.");
 
-        gameBoard.clearBoard();
+        gameBoardModel.clearBoard();
     }
 
     @Test
@@ -72,23 +72,23 @@ public class BoardTest {
         System.out.println("Function Test::" + new Object(){}.getClass().getEnclosingMethod().getName());
 
 
-        Board gameBoard = BoardHelperSingleton.getInstance().getBoard();
+        BoardModel gameBoardModel = BoardHelperSingleton.getInstance().getBoard();
 
         // Create a position for testing
         Position position = new Position(3, 3);
 
         // Create and add the first piece to the board
         SerfPiece piece1 = new SerfPiece(position, AbstractPiece.PEICE_TEAM.WHITE);
-        gameBoard.addPiece(piece1);
+        gameBoardModel.addPiece(piece1);
 
         // Check that the position is occupied
-        Assertions.assertTrue(gameBoard.isOccupied(position), "The spot should be occupied after adding the first piece.");
+        Assertions.assertTrue(gameBoardModel.isOccupied(position), "The spot should be occupied after adding the first piece.");
 
         // Try to add a piece to the same position and check that an exception is thrown
         SerfPiece piece2 = new SerfPiece(position, AbstractPiece.PEICE_TEAM.WHITE);
         IllegalArgumentException thrown = Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> gameBoard.addPiece(piece2),
+                () -> gameBoardModel.addPiece(piece2),
                 "Expected addPiece() to throw an exception when trying to add a piece to an occupied spot."
         );
 
@@ -97,7 +97,7 @@ public class BoardTest {
 
         System.out.println("Test Passed.");
 
-        gameBoard.clearBoard();
+        gameBoardModel.clearBoard();
     }
 
 
@@ -106,11 +106,11 @@ public class BoardTest {
     {
         System.out.println("Function Test::" + new Object(){}.getClass().getEnclosingMethod().getName());
 
-        Board gameBoard = BoardHelperSingleton.getInstance().getBoard();
+        BoardModel gameBoardModel = BoardHelperSingleton.getInstance().getBoard();
 
         SerfPiece myPiece = new SerfPiece(new Position(3, 3), AbstractPiece.PEICE_TEAM.WHITE);
 
-        gameBoard.addPiece(myPiece);
+        gameBoardModel.addPiece(myPiece);
 
         ArrayList<Position> validMoveSpots = myPiece.getValidPositions();
 
@@ -120,7 +120,7 @@ public class BoardTest {
 
         System.out.println("Test Passed.");
 
-        gameBoard.printBoard();
+        gameBoardModel.printBoard();
     }
 
 
@@ -143,15 +143,15 @@ public class BoardTest {
     {
         System.out.println("Function Test::" + new Object(){}.getClass().getEnclosingMethod().getName());
 
-        Board gameBoard = BoardHelperSingleton.getInstance().getBoard();
+        BoardModel gameBoardModel = BoardHelperSingleton.getInstance().getBoard();
 
         SerfPiece protagPiece = new SerfPiece(new Position(3, 3), AbstractPiece.PEICE_TEAM.WHITE);
 
         //Create secondary piece to check against (should return one valid position) (for now later it will return two)
         SerfPiece antagPiece = new SerfPiece(new Position(2, 4), AbstractPiece.PEICE_TEAM.WHITE);
 
-        gameBoard.addPiece(protagPiece);
-        gameBoard.addPiece(antagPiece);
+        gameBoardModel.addPiece(protagPiece);
+        gameBoardModel.addPiece(antagPiece);
 
         ArrayList<Position> positions = protagPiece.getValidPositions();
 
@@ -159,7 +159,7 @@ public class BoardTest {
 
         System.out.println("Test Passed.");
 
-        gameBoard.printBoard();
+        gameBoardModel.printBoard();
     }
 
     @AfterAll

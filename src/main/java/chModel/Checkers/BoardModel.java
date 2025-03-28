@@ -4,13 +4,13 @@ import chModel.Checkers.Pieces.AbstractPiece;
 
 import java.util.HashMap;
 
-public class Board {
+public class BoardModel {
 
     HashMap<Position, AbstractPiece> boardSpace;
 
     int size;
 
-    public Board(int size)
+    public BoardModel(int size)
     {
         this.size = size;
 
