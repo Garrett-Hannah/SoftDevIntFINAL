@@ -51,6 +51,7 @@ public class Board {
                 '}';
     }
 
+    //Using for debugging...
     public void printBoard() {
         char[] columns = "abcdefgh".toCharArray(); // Column labels
 
@@ -69,7 +70,7 @@ public class Board {
                 AbstractPiece piece = boardSpace.get(new Position(i, j));
 
                 if (piece != null) {
-                    System.out.print(piece.getId() + " "); // Print piece ID
+                    System.out.print((piece.getTeam() == AbstractPiece.PEICE_TEAM.WHITE) ? "W" : "B" + " "); // Print piece ID
                 } else {
                     // Alternate between `#` and `.` for checkerboard pattern
                     if ((i + j) % 2 == 0) System.out.print("# ");

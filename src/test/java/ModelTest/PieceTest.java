@@ -5,6 +5,7 @@ import Model.Checkers.Pieces.AbstractPiece;
 import Model.Checkers.Pieces.SerfPiece;
 import Model.Checkers.Position;
 import Model.Math.Vector2i;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,6 +19,11 @@ public class PieceTest {
         Game.initialize(8);
     }
 
+    @AfterEach
+    void resetBoard()
+    {
+        Game.getInstance().getBoard().clearBoard();
+    }
 
     @Test
     void testPieceCreation() {
@@ -35,9 +41,9 @@ public class PieceTest {
     @Test
     void testPieceMovement() {
         SerfPiece piece = new SerfPiece(new Position(2, 2), AbstractPiece.PEICE_TEAM.BLACK);
+
         piece.move(new Vector2i(1, 1));  // Assume move() updates position
-        assertEquals(3, piece.getPosition().getX());
-        assertEquals(3, piece.getPosition().getY());
+        assertEquals(new Position(3, 3), piece.getPosition());
     }
 
     @Test
@@ -52,7 +58,10 @@ public class PieceTest {
     @Test
     void testInvalidMovement() {
         SerfPiece piece = new SerfPiece(new Position(5, 5), AbstractPiece.PEICE_TEAM.WHITE);
-        moveResult = piece.move(new Vector2i(8, 8)); // Assume move() returns false for invalid moves
-        assertFalse(moveResult, "Piece should not be able to move illegally.");
+
+        // Expecting IllegalArgumentException
+        assertThrows(IllegalArgumentException.class, () -> {
+            piece.move(new Vector2i(8, 8));
+        }, "Piece should throw an exception for illegal moves.");
     }
 }

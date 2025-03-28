@@ -58,11 +58,17 @@ public abstract class AbstractPiece {
         return id;
     }
 
-    public boolean move(Vector2i delta) {
-        Position current = this.position;
-        current.getDeltaPosition(delta);
-        return false;
+    public void move(Vector2i delta) {
+
+        Position newPosition = position.getDeltaPosition(delta);
+
+        if (!isValidMove(newPosition)) {  // Assuming
+            throw new IllegalArgumentException("Invalid move: " + delta);
+        }
+
+        this.position = newPosition;
     }
+
 
     public PEICE_TEAM getTeam() {
         return this.team;
@@ -90,6 +96,14 @@ public abstract class AbstractPiece {
         PEICE_TEAM(int value){
             this.value = value;
         }
+    }
+
+
+    public boolean isValidMove(Position position)
+    {
+        Board gameBoard = Game.getInstance().getBoard();
+
+        return !gameBoard.isOccupied(position);
     }
 }
 
