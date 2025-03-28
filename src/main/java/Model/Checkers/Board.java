@@ -1,6 +1,6 @@
-package Model;
+package Model.Checkers;
 
-import GameUtil.Incrementer;
+import Model.Checkers.Pieces.AbstractPiece;
 
 import java.util.HashMap;
 
@@ -60,7 +60,7 @@ public class Board {
                 AbstractPiece piece = (boardSpace.get(new Position(i + 1, j + 1)));
 
                 if(piece == null) System.out.print("*");
-                else System.out.print(piece.id);
+                else System.out.print(piece.getId());
             }
 
             System.out.println("");

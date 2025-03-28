@@ -1,10 +1,10 @@
 package ModelTest;
 
 import GameUtil.Game;
-import Model.Board;
-import Model.AbstractPiece;
-import Model.Position;
-import Model.SerfPiece;
+import Model.Checkers.Board;
+import Model.Checkers.Pieces.AbstractPiece;
+import Model.Checkers.Position;
+import Model.Checkers.Pieces.SerfPiece;
 import org.junit.jupiter.api.*;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ public class BoardTest {
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 // Create a new piece for each position
-                SerfPiece newPiece = new SerfPiece(new Position(x + 1, y + 1), AbstractPiece.PIECE_DIRECTION.FORWARD);
+                SerfPiece newPiece = new SerfPiece(new Position(x + 1, y + 1), AbstractPiece.PIECE_DIRECTION.FORWARD, AbstractPiece.PEICE_TEAM.WHITE);
 
                 // Add the piece to the board
                 gameBoard.addPiece(newPiece);
@@ -65,14 +65,14 @@ public class BoardTest {
         Position position = new Position(3, 3);
 
         // Create and add the first piece to the board
-        SerfPiece piece1 = new SerfPiece(position, AbstractPiece.PIECE_DIRECTION.FORWARD);
+        SerfPiece piece1 = new SerfPiece(position, AbstractPiece.PIECE_DIRECTION.FORWARD, AbstractPiece.PEICE_TEAM.WHITE);
         gameBoard.addPiece(piece1);
 
         // Check that the position is occupied
         Assertions.assertTrue(gameBoard.isOccupied(position), "The spot should be occupied after adding the first piece.");
 
         // Try to add a piece to the same position and check that an exception is thrown
-        SerfPiece piece2 = new SerfPiece(position, AbstractPiece.PIECE_DIRECTION.FORWARD);
+        SerfPiece piece2 = new SerfPiece(position, AbstractPiece.PIECE_DIRECTION.FORWARD, AbstractPiece.PEICE_TEAM.WHITE);
         IllegalArgumentException thrown = Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> gameBoard.addPiece(piece2),
@@ -90,7 +90,7 @@ public class BoardTest {
     {
         Board gameBoard = Game.getInstance().getBoard();
 
-        SerfPiece myPiece = new SerfPiece(new Position(3, 3), AbstractPiece.PIECE_DIRECTION.FORWARD);
+        SerfPiece myPiece = new SerfPiece(new Position(3, 3), AbstractPiece.PIECE_DIRECTION.FORWARD, AbstractPiece.PEICE_TEAM.WHITE);
 
         gameBoard.addPiece(myPiece);
 
@@ -100,23 +100,30 @@ public class BoardTest {
         Assertions.assertEquals(new Position(2, 4), validMoveSpots.get(1), "Did Not equal expected value.");
     }
 
+
+
     /*
     Board Setup:
-     oooooooo
-     oooooooo
-     ooooXooo
-     oooXoooo
-     oooooooo
+  a b c d e f g h
+8 # . # . # . # .
+7 . # . # . # . #
+6 # . # . # . # .
+5 . # . # O # . #
+4 # . # O # . # .
+3 . # . # . # . #
+2 # . # . # . # .
+1 . # . # . # . #
      */
+    //Expected result: there is one valid movement position.
     @Test
     void testGetValidPositionAgainstOtherPiece()
     {
         Board gameBoard = Game.getInstance().getBoard();
 
-        SerfPiece protagPiece = new SerfPiece(new Position(3, 3), AbstractPiece.PIECE_DIRECTION.FORWARD);
+        SerfPiece protagPiece = new SerfPiece(new Position(3, 3), AbstractPiece.PIECE_DIRECTION.FORWARD, AbstractPiece.PEICE_TEAM.WHITE);
 
         //Create secondary piece to check against (should return one valid position) (for now later it will return two)
-        SerfPiece antagPiece = new SerfPiece(new Position(2, 4), AbstractPiece.PIECE_DIRECTION.FORWARD);
+        SerfPiece antagPiece = new SerfPiece(new Position(2, 4), AbstractPiece.PIECE_DIRECTION.FORWARD, AbstractPiece.PEICE_TEAM.WHITE);
 
         gameBoard.addPiece(protagPiece);
         gameBoard.addPiece(antagPiece);
@@ -126,7 +133,7 @@ public class BoardTest {
         Assertions.assertEquals(1, positions.size(), "Expected only ONE available movement!");
 
     }
-    
+
     /*
     Board Setup:
      oooooooo

@@ -1,6 +1,6 @@
 package GameUtil;
 
-import Model.Board;
+import Model.Checkers.Board;
 
 public class Game {
     private static Game instance;

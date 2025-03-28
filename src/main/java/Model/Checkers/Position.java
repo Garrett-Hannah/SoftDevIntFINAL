@@ -1,30 +1,37 @@
-package Model;
+package Model.Checkers;
 
 import GameUtil.Game;
+import Model.Math.Vector2i;
 
 import static java.util.Objects.hash;
 
 public class Position {
-    private int x;
-    private int y;
+    private Vector2i position;
+
 
     public Position(int x, int y) {
+        position = new Vector2i(x, y);
         this.setX(x);
         this.setY(y);
+    }
+
+    public Position(Vector2i position)
+    {
+        this(position.x, position.y);
     }
 
     public void setX(int x) {
         if (!isValueValidBoardSpot(x)) {
             throw new IllegalArgumentException("Invalid x position: " + x + ". Must be between 1 and " + getBoardHeight());
         }
-        this.x = x;
+        this.position.x = x;
     }
 
     public void setY(int y) {
         if (!isValueValidBoardSpot(y)) {
             throw new IllegalArgumentException("Invalid y position: " + y + ". Must be between 1 and " + getBoardHeight());
         }
-        this.y = y;
+        this.position.y = y;
     }
 
     private boolean isValueValidBoardSpot(int value) {
@@ -45,21 +52,21 @@ public class Position {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         Position position = (Position) obj;
-        return x == position.x && y == position.y;
+        return this.getX() == position.getX() && this.getY() == position.getY();
     }
 
     @Override
     public int hashCode() {
-        return hash(x, y);
+        return hash(this.getX(), this.getY());
     }
 
     @Override
     public String toString() {
         // Convert x to letters A-H
-        char column = (char) ('@' + x);  // Convert the column index to a letter (A-H)
+        char column = (char) ('@' + this.getX());  // Convert the column index to a letter (A-H)
 
         // Convert y to numbers 1-8
-        int row = y;
+        int row = this.getY();
         // Return the position as "A1", "B2", ..., "H8"
         return column + Integer.toString(row);
     }
@@ -73,10 +80,10 @@ public class Position {
     }
 
     public int getY() {
-        return this.y;
+        return this.position.y;
     }
 
     public int getX() {
-        return this.x;
+        return this.position.x;
     }
 }

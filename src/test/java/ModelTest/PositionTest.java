@@ -1,7 +1,7 @@
 package ModelTest;
 
 import GameUtil.Game;
-import Model.Position;
+import Model.Checkers.Position;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

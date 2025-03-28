@@ -1,23 +1,30 @@
-package Model;
+package Model.Checkers.Pieces;
 
 import GameUtil.Game;
 import GameUtil.Incrementer;
+import Model.Checkers.Board;
+import Model.Checkers.Position;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public abstract class AbstractPiece {
 
-    int id;
+
+
+
+    private int id;
     private Position position;
-    PIECE_DIRECTION direction;
+    protected PIECE_DIRECTION direction;
+    protected PEICE_TEAM team;
 
 
-    AbstractPiece(Position position, PIECE_DIRECTION direction)
+
+    AbstractPiece(Position position, PIECE_DIRECTION direction, PEICE_TEAM team)
     {
-        this.position = position;
         this.id = Incrementer.getInstance().increment();
+        this.position = position;
         this.direction = direction;
+        this.team = team;
     }
 
     //Will need a recursive function to build up all possible moves. going to need a lot of testing for that.
@@ -59,6 +66,17 @@ public abstract class AbstractPiece {
         private final int value;
 
         PIECE_DIRECTION(int value) {
+            this.value = value;
+        }
+    }
+
+    public enum PEICE_TEAM{
+        WHITE(0),
+        BLACK(1);
+
+        private final int value;
+
+        PEICE_TEAM(int value){
             this.value = value;
         }
     }
