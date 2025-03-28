@@ -1,4 +1,4 @@
-package Server;
+package Network;
 
 public class Thread implements Runnable{
     @Override

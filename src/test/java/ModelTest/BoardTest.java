@@ -34,7 +34,7 @@ public class BoardTest {
         Game.getInstance().getBoard().clearBoard();
     }
 
-    @Test  // Use @RepeatedTest(1) because we'll loop through all 64 spots within the test.
+    @Test
     void placePiece() {
 
         System.out.println("Function Test::" + new Object(){}.getClass().getEnclosingMethod().getName());
