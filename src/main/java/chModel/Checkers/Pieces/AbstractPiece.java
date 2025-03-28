@@ -1,7 +1,7 @@
 package chModel.Checkers.Pieces;
 
-import chGameUtil.Game;
-import chGameUtil.Incrementer;
+import chGameUtil.BoardHelperSingleton;
+import chGameUtil.IncrementerSingleton;
 import chModel.Checkers.Board;
 import chModel.Checkers.Position;
 import chModel.Math.Vector2i;
@@ -22,7 +22,7 @@ public abstract class AbstractPiece {
 
     AbstractPiece(Position position, PEICE_TEAM team)
     {
-        this.id = Incrementer.getInstance().increment();
+        this.id = IncrementerSingleton.getInstance().increment();
         this.position = position;
         this.direction = (team == PEICE_TEAM.WHITE) ? PIECE_DIRECTION.FORWARD : PIECE_DIRECTION.BACKWARD;
         this.team = team;
@@ -40,7 +40,7 @@ public abstract class AbstractPiece {
         Position positionOption1 = currentPosition.getDeltaPosition(1, this.direction.value);
         Position positionOption2 = currentPosition.getDeltaPosition(-1, this.direction.value);
 
-        Board gameBoard = Game.getInstance().getBoard();
+        Board gameBoard = BoardHelperSingleton.getInstance().getBoard();
 
         ArrayList<Position> validPositions = new ArrayList<>();
 
@@ -101,7 +101,7 @@ public abstract class AbstractPiece {
 
     public boolean isValidMove(Position position)
     {
-        Board gameBoard = Game.getInstance().getBoard();
+        Board gameBoard = BoardHelperSingleton.getInstance().getBoard();
 
         return !gameBoard.isOccupied(position);
     }

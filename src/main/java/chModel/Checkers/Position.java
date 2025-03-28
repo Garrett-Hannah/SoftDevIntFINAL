@@ -1,6 +1,6 @@
 package chModel.Checkers;
 
-import chGameUtil.Game;
+import chGameUtil.BoardHelperSingleton;
 import chModel.Math.Vector2i;
 
 import static java.util.Objects.hash;
@@ -40,7 +40,7 @@ public class Position {
 
     private int getBoardHeight() {
         try {
-            return Game.getInstance().getBoardHeight();
+            return BoardHelperSingleton.getInstance().getBoardHeight();
         } catch (IllegalStateException e) {
             System.err.println("Warning: Game instance not initialized. Using default board height of 8.");
             return 8; // Default size, adjust as needed

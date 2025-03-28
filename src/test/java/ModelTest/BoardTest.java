@@ -1,6 +1,6 @@
 package ModelTest;
 
-import chGameUtil.Game;
+import chGameUtil.BoardHelperSingleton;
 import chModel.Checkers.Board;
 import chModel.Checkers.Pieces.AbstractPiece;
 import chModel.Checkers.Position;
@@ -17,13 +17,13 @@ public class BoardTest {
     @BeforeAll
     static void initBoard()
     {
-        Game.initialize(8);
+        BoardHelperSingleton.initialize(8);
     }
 
     @Test
     void testBoardInitProper()
     {
-        Assertions.assertEquals(8, Game.getInstance().getBoardHeight(), "Game did not initialize to the expected size.");
+        Assertions.assertEquals(8, BoardHelperSingleton.getInstance().getBoardHeight(), "Game did not initialize to the expected size.");
     }
 
 
@@ -31,7 +31,7 @@ public class BoardTest {
     void postTest()
     {
 
-        Game.getInstance().getBoard().clearBoard();
+        BoardHelperSingleton.getInstance().getBoard().clearBoard();
     }
 
     @Test
@@ -39,7 +39,7 @@ public class BoardTest {
 
         System.out.println("Function Test::" + new Object(){}.getClass().getEnclosingMethod().getName());
 
-        Board gameBoard = Game.getInstance().getBoard();
+        Board gameBoard = BoardHelperSingleton.getInstance().getBoard();
 
         // Loop through all 8x8 positions on the board (assuming 8x8 grid)
         for (int x = 0; x < 8; x++) {
@@ -72,7 +72,7 @@ public class BoardTest {
         System.out.println("Function Test::" + new Object(){}.getClass().getEnclosingMethod().getName());
 
 
-        Board gameBoard = Game.getInstance().getBoard();
+        Board gameBoard = BoardHelperSingleton.getInstance().getBoard();
 
         // Create a position for testing
         Position position = new Position(3, 3);
@@ -106,7 +106,7 @@ public class BoardTest {
     {
         System.out.println("Function Test::" + new Object(){}.getClass().getEnclosingMethod().getName());
 
-        Board gameBoard = Game.getInstance().getBoard();
+        Board gameBoard = BoardHelperSingleton.getInstance().getBoard();
 
         SerfPiece myPiece = new SerfPiece(new Position(3, 3), AbstractPiece.PEICE_TEAM.WHITE);
 
@@ -143,7 +143,7 @@ public class BoardTest {
     {
         System.out.println("Function Test::" + new Object(){}.getClass().getEnclosingMethod().getName());
 
-        Board gameBoard = Game.getInstance().getBoard();
+        Board gameBoard = BoardHelperSingleton.getInstance().getBoard();
 
         SerfPiece protagPiece = new SerfPiece(new Position(3, 3), AbstractPiece.PEICE_TEAM.WHITE);
 
@@ -165,7 +165,7 @@ public class BoardTest {
     @AfterAll
     static void breakDown()
     {
-        Game.getInstance().closeBoard();
+        BoardHelperSingleton.getInstance().closeBoard();
     }
 
     /*

@@ -1,6 +1,6 @@
 package chNetwork;
 
-public enum RESPONSE_CODES {
+public enum SERVER_RESPONSE_CODES {
 
     // General success & error responses
     SUCCESS(2000),
@@ -33,7 +33,7 @@ public enum RESPONSE_CODES {
 
     private final int code;
 
-    RESPONSE_CODES(int code) {
+    SERVER_RESPONSE_CODES(int code) {
         this.code = code;
     }
 

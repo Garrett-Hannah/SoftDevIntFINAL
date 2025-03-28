@@ -1,16 +1,16 @@
 package chGameUtil;
 
-public class Incrementer {
-    private static Incrementer instance;
+public class IncrementerSingleton {
+    private static IncrementerSingleton instance;
     private int i = 0; // Counter
 
     // Private constructor prevents direct instantiation
-    private Incrementer() {}
+    private IncrementerSingleton() {}
 
     // Public method to get the singleton instance
-    public static Incrementer getInstance() {
+    public static IncrementerSingleton getInstance() {
         if (instance == null) {
-            instance = new Incrementer();
+            instance = new IncrementerSingleton();
         }
         return instance;
     }

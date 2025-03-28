@@ -1,6 +1,6 @@
 package chNetwork;
 
-public enum REQUEST_CODES {
+public enum CLIENT_REQUEST_CODES {
 
     // Connection requests
     CONNECT(1000),
@@ -21,7 +21,7 @@ public enum REQUEST_CODES {
 
     private final int code;
 
-    REQUEST_CODES(int code) {
+    CLIENT_REQUEST_CODES(int code) {
         this.code = code;
     }
 

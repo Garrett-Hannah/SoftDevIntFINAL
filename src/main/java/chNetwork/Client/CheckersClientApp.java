@@ -1,10 +1,14 @@
 package chNetwork.Client;
 
+import chNetwork.CLIENT_REQUEST_CODES;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.*;
+import java.util.List;
+import java.util.Scanner;
 
 public class CheckersClientApp {
     private static Socket socket;
@@ -103,6 +107,11 @@ public class CheckersClientApp {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void sendCommand(CLIENT_REQUEST_CODES request, List<String> args)
+    {
+        StringBuilder myString =
     }
 
     // Method to send a message

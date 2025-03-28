@@ -1,7 +1,6 @@
 package ModelTest;
 
-import chGameUtil.Game;
-import chModel.Checkers.Board;
+import chGameUtil.BoardHelperSingleton;
 import chModel.Checkers.Position;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -13,7 +12,7 @@ public class PositionTest {
     @BeforeAll
     static void start()
     {
-        Game.initialize(8);
+        BoardHelperSingleton.initialize(8);
     }
 
     @Test
@@ -29,6 +28,6 @@ public class PositionTest {
     @AfterAll
     static void breakDown()
     {
-        Game.getInstance().closeBoard();
+        BoardHelperSingleton.getInstance().closeBoard();
     }
 }

@@ -1,6 +1,6 @@
 package ModelTest;
 
-import chGameUtil.Game;
+import chGameUtil.BoardHelperSingleton;
 import chModel.Checkers.Pieces.AbstractPiece;
 import chModel.Checkers.Pieces.SerfPiece;
 import chModel.Checkers.Position;
@@ -17,13 +17,13 @@ public class PieceTest {
     @BeforeAll
     static void init()
     {
-        Game.initialize(8);
+        BoardHelperSingleton.initialize(8);
     }
 
     @AfterEach
     void resetBoard()
     {
-        Game.getInstance().getBoard().clearBoard();
+        BoardHelperSingleton.getInstance().getBoard().clearBoard();
     }
 
     @Test
@@ -70,6 +70,6 @@ public class PieceTest {
     @AfterAll
     static void breakDown()
     {
-        Game.getInstance().closeBoard();
+        BoardHelperSingleton.getInstance().closeBoard();
     }
 }

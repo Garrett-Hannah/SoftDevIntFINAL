@@ -5,7 +5,7 @@ import chNetwork.Server.CheckersServerRef;
 import java.io.IOException;
 import java.util.Scanner;
 
-public class ServerRunner {
+public class ServerRunnerEntrypoint {
 
     public static void main(String[] args) {
         CheckersServerRef myServer = new CheckersServerRef(5000); // Use a specific port
