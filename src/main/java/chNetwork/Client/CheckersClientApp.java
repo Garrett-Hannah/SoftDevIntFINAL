@@ -6,7 +6,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.net.*;
 
-public class Client {
+public class CheckersClientApp {
     private static Socket socket;
     private static PrintWriter out;
     private static BufferedReader in;

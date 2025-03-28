@@ -10,6 +10,9 @@ package chNetwork.Client;
 public class clientRequest {
 
     public clientRequest()
+    {
+
+    }
 
 
 

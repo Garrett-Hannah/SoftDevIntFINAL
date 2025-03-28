@@ -1,6 +1,4 @@
-package server;
-
-import chModel.Checkers.Board;
+package chNetwork.Server;
 
 import java.io.*;
 import java.net.*;
@@ -10,8 +8,10 @@ public class CheckersServer {
     private static final Set<ClientHandler> clientHandlers = new HashSet<>();
     private static final Map<String, ClientHandler> clients = new HashMap<>();
 
+    private static ClientHandler host = null;
 
-    private static final Board activeBoard;
+    private static ClientHandler white = null;
+    private static ClientHandler black = null;
 
 
     public static void main(String[] args) throws IOException {
@@ -24,12 +24,30 @@ public class CheckersServer {
         }
     }
 
+    void connectNewClient(ClientHandler handler)
+    {
+        if(host == null)
+        {
+            host = handler;
+        }
+
+        if(white == null)
+        {
+            white = handler;
+        }
+        else if(black == null)
+        {
+            black = handler;
+        }
+
+    }
+
     private static class ClientHandler extends Thread {
         private Socket socket;
         private PrintWriter out;
         private BufferedReader in;
         private String username;
-        CheckersServer server;
+        CheckersServerRef server;
 
         public ClientHandler(Socket socket) {
             this.socket = socket;
@@ -37,38 +55,33 @@ public class CheckersServer {
 
         public void run() {
             try {
-                //Used to input from users.
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-                //Used to output to users.
                 out = new PrintWriter(socket.getOutputStream(), true);
 
                 // Prompt client for username
                 username = in.readLine();
 
                 //TODO: add to clients
-                ClientHandler clientHandler = new ClientHandler(this.socket);
                 synchronized (clients)
                 {
-                    clients.put(username, clientHandler);
+                    clients.put(username, this);
                 }
 
-                // Send list of connected clients and their names
-                StringBuilder clientsList = new StringBuilder("Connected users: \n");
-                // TODO: send list to client
 
-                synchronized (clients)
-                {
-                    for(String user : clients.keySet())
+                // Send list of connected clients and their names
+                StringBuilder clientsList = new StringBuilder("Connected users");
+
+                // TODO: send list to client
+                synchronized (clients){
+                    clientsList.append("(").append(clientsList.length()).append("): ");
+                    for(String name: clients.keySet())
                     {
-                        clientsList.append(user + "\n");
+                        clientsList.append(name).append(" ");
+
                     }
                 }
 
                 out.println(clientsList.toString());
-
-
-
 
                 // Notify other clients about new user
                 synchronized (clientHandlers) {
@@ -84,18 +97,12 @@ public class CheckersServer {
                 String message;
                 while ((message = in.readLine()) != null) {
                     System.out.println(username + ": " + message);
-                    // TODO: broadcast message
 
-                    synchronized (clientHandlers)
-                    {
-                        for(ClientHandler handler : clientHandlers)
-                        {
-                            handler.out.println(username + ": " + message);
+                    synchronized (clientHandlers) {
+                        for (ClientHandler clientHandler : clientHandlers) {
+                            clientHandler.out.println(username + ": " + message);
                         }
-
                     }
-
-
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -124,3 +131,4 @@ public class CheckersServer {
 
 
 }
+
