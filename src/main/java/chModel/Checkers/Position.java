@@ -3,6 +3,7 @@ package chModel.Checkers;
 import chGameUtil.BoardHelperSingleton;
 import chModel.Math.Vector2i;
 
+
 import static java.util.Objects.hash;
 
 public class Position {
@@ -96,5 +97,25 @@ public class Position {
 
     public int getX() {
         return this.position.x;
+    }
+
+    //Map the position from a linear value to the coordinate value. pretty much only used because.
+
+    /**
+     * Expects The value to be 0 indexed.
+     * @param linearInt
+     * @return
+     */
+    public static Position positionFromInt(int linearInt) {
+
+        int xValue = linearInt % BoardHelperSingleton.getInstance().getBoardHeight();
+        int yValue = linearInt / BoardHelperSingleton.getInstance().getBoardHeight();
+
+        yValue += 1;
+        xValue += 1;
+
+        Position p1 = new Position(xValue, yValue);
+
+        return p1;
     }
 }

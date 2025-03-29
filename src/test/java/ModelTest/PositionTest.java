@@ -2,10 +2,13 @@ package ModelTest;
 
 import chGameUtil.BoardHelperSingleton;
 import chModel.Checkers.Position;
+import chModel.Math.Vector2i;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PositionTest {
 
@@ -23,6 +26,28 @@ public class PositionTest {
         Assertions.assertTrue(goodPosition != null, " Error with position declaration!");
     }
 
+    @Test
+    void testLinPositionFromInt()
+    {
+        Position pA1 = Position.positionFromInt(0);
+        Assertions.assertEquals(new Position(1, 1), pA1, "Position was not expected.");
+
+        Position pH8 = Position.positionFromInt(63);
+        Assertions.assertEquals(new Position(8, 8), pH8, "Position was not expected.");
+    }
+
+    @Test
+    void testInvalidPositionFromInt()
+    {
+        // Expecting IllegalArgumentException
+        assertThrows(IllegalArgumentException.class, () -> {
+            Position.positionFromInt(65);
+        }, "Piece should throw an exception for illegal moves.");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            Position.positionFromInt(-1);
+        }, "Piece should throw an exception for illegal moves.");
+    }
 
 
     @AfterAll

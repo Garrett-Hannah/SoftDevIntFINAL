@@ -3,23 +3,23 @@ package chNetwork.Server;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 //This class takes the implements the functions required in the view...
 public class ServerWindow implements ServerView { // Implement the interface
 
     private JFrame frame;
-
     private JTextArea textArea;
-    private JTextField textField;
+    private JList<String> activeUsers;
 
-
-    private CheckersServer serverLogic; // Reference to the logic class
+    private final ServerLogic serverLogic; // Reference to the logic class
 
     // Constructor takes the logic controller
-    public ServerWindow(CheckersServer serverLogic) {
+    public ServerWindow(ServerLogic serverLogic) {
         this.serverLogic = serverLogic;
 
         this.serverLogic.setView(this);
+
         createAndShowGUI();
     }
 
@@ -32,20 +32,12 @@ public class ServerWindow implements ServerView { // Implement the interface
             textArea.setLineWrap(true);
             JScrollPane scrollPane = new JScrollPane(textArea);
 
-            textField = new JTextField();
-            sendButton = new JButton("Send");
 
-            // Action listener now calls the logic's method
-            ActionListener sendAction = e -> handleSendAction();
-            textField.addActionListener(sendAction);
-            sendButton.addActionListener(sendAction);
 
             frame.setLayout(new BorderLayout());
             frame.add(scrollPane, BorderLayout.CENTER);
             JPanel bottomPanel = new JPanel();
             bottomPanel.setLayout(new BorderLayout());
-            bottomPanel.add(textField, BorderLayout.CENTER);
-            bottomPanel.add(sendButton, BorderLayout.EAST);
             frame.add(bottomPanel, BorderLayout.SOUTH);
 
             frame.setSize(400, 300);
@@ -54,37 +46,25 @@ public class ServerWindow implements ServerView { // Implement the interface
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    // Tell the logic to disconnect before closing
-                    serverLogic.disconnect();
+                    serverLogic.stop();
                     frame.dispose(); // Close the window
                     System.exit(0); // Exit application if this is the main window
                 }
             });
 
-            frame.setVisible(true);
-            textField.requestFocusInWindow(); // Set focus to input field
-        });
-    }
 
-    // Handles sending text from the input field
-    private void handleSendAction() {
-        String message = textField.getText();
-        if (!message.trim().isEmpty()) {
-            // Check if it's a command (e.g., starts with '/') or plain chat
-            if (message.startsWith("/")) {
-                // Basic command parsing (needs improvement)
-                // Example: /move A1 B2 -> sendCommand(MOVE, ["A1", "B2"])
-                // This parsing logic might live here or be passed to clientLogic
-                System.out.println("Command detected (implement parsing): " + message);
-                // clientLogic.parseAndSendCommand(message); // You'd need this method in CheckersClient
-                appendMessage("Client: Command handling not fully implemented yet."); // Feedback
-                textField.setText("");
-            } else {
-                // Send as regular chat message via the logic class
-                clientLogic.sendMessage(message);
-                // Logic class now calls clearInputField via the interface upon success
-            }
-        }
+            JPanel rightPanel = new JPanel();
+
+            this.activeUsers = new JList<>();
+
+            rightPanel.add(activeUsers);
+
+            frame.add(rightPanel, BorderLayout.EAST);
+
+
+
+            frame.setVisible(true);
+        });
     }
 
     // --- Implementation of ChatView Interface ---
@@ -92,6 +72,7 @@ public class ServerWindow implements ServerView { // Implement the interface
     //Push new message onto stack.
     @Override
     public void appendMessage(String message) {
+        System.out.println("Appending...... " + message);
         // Ensure updates are on the EDT (already handled if called via SwingUtilities.invokeLater)
         if (SwingUtilities.isEventDispatchThread()) {
             textArea.append(message + "\n");
@@ -100,6 +81,8 @@ public class ServerWindow implements ServerView { // Implement the interface
         } else {
             SwingUtilities.invokeLater(() -> appendMessage(message));
         }
+
+        System.out.println("Should have been updated?");
     }
 
     @Override
@@ -108,15 +91,6 @@ public class ServerWindow implements ServerView { // Implement the interface
             JOptionPane.showMessageDialog(frame, message, title, JOptionPane.ERROR_MESSAGE);
         } else {
             SwingUtilities.invokeLater(() -> showErrorMessage(title, message));
-        }
-    }
-
-    @Override
-    public void clearInputField() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            textField.setText("");
-        } else {
-            SwingUtilities.invokeLater(this::clearInputField);
         }
     }
 
@@ -130,48 +104,14 @@ public class ServerWindow implements ServerView { // Implement the interface
     }
 
     @Override
-    public void closeWindow() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            frame.dispose();
-        } else {
-            SwingUtilities.invokeLater(this::closeWindow);
-        }
-    }
+    public void updateUserList(ArrayList<String> userlist) {
 
+        this.activeUsers.removeAll();
 
-    // --- Main method to launch the application ---
-    public static void main(String[] args) {
-        // 1. Get username
-        String username = JOptionPane.showInputDialog("Enter your username:");
-        if (username == null || username.trim().isEmpty()) {
-            System.out.println("Username cancelled or empty. Exiting.");
-            System.exit(0);
+        for(String user: userlist)
+        {
+            this.activeUsers.add(new JButton(user));
         }
 
-        // 2. Create the logic component
-        // Ideally, get host/port from config or args
-        ClientLogic clientLogic = new ClientLogic("localhost", 5000);
-
-        // 3. Create the GUI component (View) and link it to the logic
-        // The ChatWindow constructor now calls clientLogic.setView(this)
-        ChatWindow chatWindow = new ChatWindow(clientLogic);
-
-        // 4. Attempt to connect (after GUI is initialized and linked)
-        boolean connected = clientLogic.connect(username);
-
-        if (!connected) {
-            // Handle connection failure - maybe close the initial window
-            System.err.println("Initial connection failed. Exiting.");
-            // Ensure GUI resources are cleaned up if connection fails immediately
-            SwingUtilities.invokeLater(() -> {
-                if (chatWindow.frame != null) {
-                    chatWindow.frame.dispose();
-                }
-            });
-            System.exit(1); // Exit with error status
-        }
-
-        // Application is now running, driven by events and the listener thread...
-        System.out.println("Application setup complete. GUI visible. Listening for messages.");
     }
 }

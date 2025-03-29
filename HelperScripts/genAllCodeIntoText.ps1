@@ -1,0 +1,1 @@
+ Get-ChildItem -Recurse -Filter *.java | Get-Content | Set-Content all_code.txt

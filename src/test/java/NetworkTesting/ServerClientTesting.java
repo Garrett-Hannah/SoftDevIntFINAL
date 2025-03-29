@@ -1,10 +1,13 @@
 package NetworkTesting;
 
 
-import chNetwork.Server.CheckersServer;
+import chNetwork.Server.ServerLogic;
 
 public class ServerClientTesting {
 
-    private static CheckersServer server;
+    private static ServerLogic server;
 
 }
+
+
+//Should b there

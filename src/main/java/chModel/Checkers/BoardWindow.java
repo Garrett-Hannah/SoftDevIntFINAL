@@ -1,13 +1,11 @@
 package chModel.Checkers;
 
 import chModel.Checkers.Pieces.AbstractPiece;
-import chNetwork.CLIENT_REQUEST_CODES;
 import chNetwork.Client.ClientLogic;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.SequencedSet;
 
 public class BoardWindow implements BoardView{
 
@@ -15,27 +13,20 @@ public class BoardWindow implements BoardView{
 
     private ClientLogic clientLogic;
 
-    private JFrame windowFrame;
+    public JFrame frame;
     private JButton announmentButton;
 
-
+    ArrayList<JButton> boardButtons;
 
 
     BoardWindow(ClientLogic clientLogic)
     {
         this.clientLogic = clientLogic;
 
-        ArrayList<String> commands = new ArrayList<>();
-
-        commands.add("A1");
-        commands.add("B2");
-
-        clientLogic.sendCommand(CLIENT_REQUEST_CODES.MOVE_PIECE, commands);
-
         setupUI();
         addListener();
 
-        windowFrame.setVisible(true);
+        frame.setVisible(true);
     }
 
     JPanel buildBoardGrid(int boardSize)
@@ -47,10 +38,13 @@ public class BoardWindow implements BoardView{
         for(int i = 0; i < boardSize * boardSize; i++)
         {
             JButton tempButton = new JButton(String.valueOf(i));
+
             gridPanel.add(tempButton);
 
+
+            int finalI = i + 1;
             tempButton.addActionListener(e -> {
-                clientLogic.sendMessage(e.toString());
+                clientLogic.sendMessage(String.valueOf(finalI));
             });
         }
 
@@ -60,15 +54,15 @@ public class BoardWindow implements BoardView{
 
     void setupUI()
     {
-        windowFrame = new JFrame("Checkers board");
-        windowFrame.setSize(new Dimension(200, 200));
+        frame = new JFrame("Checkers board");
+        frame.setSize(new Dimension(400, 400));
 
         announmentButton = new JButton("Button");
         announmentButton.setPreferredSize(new Dimension(65, 50));
 
         //windowFrame.add(announmentButton);
 
-        windowFrame.add(buildBoardGrid(8));
+        frame.add(buildBoardGrid(8));
 
     }
 
@@ -103,10 +97,20 @@ public class BoardWindow implements BoardView{
 
         ClientLogic clientLogic1 = new ClientLogic("localhost", 5000);
 
-        clientLogic1.connect("test");
+        BoardWindow boardWindow = new BoardWindow(clientLogic1);
 
-        BoardWindow newWindow = new BoardWindow(clientLogic1);
+        boolean connected = clientLogic1.connect("boardTest");
 
-
+        if (!connected) {
+            // Handle connection failure - maybe close the initial window
+            System.err.println("Initial connection failed. Exiting.");
+            // Ensure GUI resources are cleaned up if connection fails immediately
+            SwingUtilities.invokeLater(() -> {
+                if (boardWindow.frame != null) {
+                    boardWindow.frame.dispose();
+                }
+            });
+            System.exit(1); // Exit with error status
+        }
     }
 }

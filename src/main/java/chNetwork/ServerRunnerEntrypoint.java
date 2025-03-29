@@ -1,6 +1,6 @@
 package chNetwork;
 
-import chNetwork.Server.CheckersServer;
+import chNetwork.Server.ServerLogic;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class ServerRunnerEntrypoint {
 
     public static void main(String[] args) {
-        CheckersServer myServer = new CheckersServer(5000); // Use a specific port
+        ServerLogic myServer = new ServerLogic(5000); // Use a specific port
 
         try {
             myServer.start(); // Start the server in the background

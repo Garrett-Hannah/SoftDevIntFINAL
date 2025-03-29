@@ -1,5 +1,8 @@
 package chNetwork.Server;
 
+import chNetwork.Client.ChatView;
+
+import javax.swing.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -7,7 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class CheckersServer implements Runnable { // Implement Runnable for the main accept loop
+public class ServerLogic implements Runnable { // Implement Runnable for the main accept loop
 
     private final int port;
     private ServerSocket serverSocket;
@@ -23,9 +26,14 @@ public class CheckersServer implements Runnable { // Implement Runnable for the 
     private ClientHandler host = null;
     private ClientHandler white = null;
     private ClientHandler black = null;
-    private ServerWindow view;
+    private ServerView view;
 
-    public CheckersServer(int port) {
+    // Setter for the View (GUI)
+    public void setView(ServerView view) {
+        this.view = view;
+    }
+
+    public ServerLogic(int port) {
         this.port = port;
         // Use a thread pool for client handlers for better resource management
         this.clientExecutor = Executors.newCachedThreadPool();
@@ -203,9 +211,12 @@ public class CheckersServer implements Runnable { // Implement Runnable for the 
         }
 
         System.out.println("Broadcasting: " + message + (sender != null ? " (from " + sender.getUsername() + ")" : " (from Server)"));
+        view.appendMessage(message);
+
         for (ClientHandler handler : handlersSnapshot) {
-            if (handler != sender) { // Avoid sending message back to sender unless needed
+            if (handler != sender) {
                 handler.sendResponse(message);
+
             }
         }
     }
@@ -249,7 +260,8 @@ public class CheckersServer implements Runnable { // Implement Runnable for the 
     // --- Main method (for standalone execution) ---
     public static void main(String[] args) {
         final int DEFAULT_PORT = 5000;
-        CheckersServer server = new CheckersServer(DEFAULT_PORT);
+
+        ServerLogic server = new ServerLogic(DEFAULT_PORT);
 
         ServerWindow window = new ServerWindow(server);
 
@@ -263,6 +275,7 @@ public class CheckersServer implements Runnable { // Implement Runnable for the 
                 server.stop();
             }));
 
+
             // Keep main alive indefinitely (or until shutdown hook)
             // server.serverThread.join(); // Alternatively, wait for the server thread itself
 
@@ -271,8 +284,11 @@ public class CheckersServer implements Runnable { // Implement Runnable for the 
             System.err.println("Failed to start server on port " + DEFAULT_PORT + ": " + e.getMessage());
             e.printStackTrace();
         }
+
+
+
+
         // Note: If start() throws an exception, the shutdown hook won't have anything to stop.
     }
 
-    public void setView(ServerWindow serverWindow) {this.view = serverWindow;}
 }

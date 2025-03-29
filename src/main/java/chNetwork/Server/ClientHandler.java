@@ -11,13 +11,13 @@ import java.util.Set;
 class ClientHandler implements Runnable { // Implement Runnable
 
     private final Socket socket;
-    private final CheckersServer serverInstance; // Reference to the parent server
+    private final ServerLogic serverInstance; // Reference to the parent server
     private PrintWriter out;
     private BufferedReader in;
     private volatile String username; // Make username volatile as it's set after thread start
     private volatile boolean clientRunning = true;
 
-    public ClientHandler(Socket socket, CheckersServer serverInstance) {
+    public ClientHandler(Socket socket, ServerLogic serverInstance) {
         this.socket = socket;
         this.serverInstance = serverInstance; // Store the server instance
     }
