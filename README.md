@@ -1,7 +1,10 @@
-Right now the program only works in the 'KeyboardInput" class under the input package. 
+Project Information:
+ - This project is a checkers implementation in java..
 
-I used intelij to run the program so i know it works there
-more things should be tested. classes could be cleaned up more. remove bloat
-keep things simple...
+Entry Points:
 
-either way try it out and see if it works enough...
+**SERVER**
+Run the serverRunnerEntryPoint file in chNetwork. (this should be moved out)
+
+**CLIENT**
+Run the ChatWindow (simple) or the boardWindow (opens a debug board)
