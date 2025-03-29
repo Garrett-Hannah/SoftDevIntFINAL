@@ -5,43 +5,44 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.concurrent.*; // For timeouts
 
-// Assuming CheckersServer is modified to be stoppable or run manually first
-// For this example, let's assume manual start/stop or a hypothetical StoppableServer class
-
+//Test Some basic functionality with the test for the network.
 public class NetworkChatTest {
 
+    //Set the port and host.
     private static final int PORT = 5000;
     private static final String HOST = "localhost";
 
-    //Static server.
-    private static CheckersServer server; // Ideal case
+    //Keep track of the server.
+    private static CheckersServer server;
 
+    //Initialize the server because this is kind of important for everything
+    //(no server = no anything >:()
     @BeforeAll
     static void startServer() throws IOException {
         System.out.println("Starting server for tests...");
-        // In a real scenario, start the server here in a separate thread
-        server = new CheckersServer(PORT);
 
+        //This starts the server in another thread so we can continue.
+        server = new CheckersServer(PORT);
         server.start();
 
-        // e.g., server = new StoppableServer(); server.start();
-        // For now, ensure server is running manually before executing tests.
-        // We need a small delay or check to ensure the server is ready.
+        //Wait for the next bit before continuing on, this just makes it so they can connect.
         try { Thread.sleep(500); } catch (InterruptedException e) {}
     }
 
+    //Afterwards we can stop the server.
     @AfterAll
     static void stopServer() {
+
+        //Announce that its stopping............
         System.out.println("Stopping server...");
-        // In a real scenario, stop the server here
         server.stop();
-        // e.g., server.stop();
-        // For now, stop the server manually after tests.
+
     }
 
-    // Helper class/method for test clients
+    //Create the testClient Class, this kind of works, but we can probably use the general
     private static class TestClient implements AutoCloseable {
         Socket socket;
         PrintWriter out;
@@ -152,10 +153,18 @@ public class NetworkChatTest {
         } // client2.close() is called here automatically
 
         // Client 1 should receive the leave message
+        client1.readLineWithTimeout(1000);
         String leaveMsg = client1.readLineWithTimeout(2000); // Allow slightly longer for disconnect propagation
+
         assertEquals(client2Username + " has left the chat.", leaveMsg, "Client 1 did not receive leave message");
 
         // Clean up client1
         client1.close();
+    }
+
+    ArrayList<String> receiveAllNextStrings()
+    {
+        
+
     }
 }
