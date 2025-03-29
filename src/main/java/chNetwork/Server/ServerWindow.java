@@ -1,23 +1,25 @@
-package chNetwork.Client;
+package chNetwork.Server;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
 //This class takes the implements the functions required in the view...
-public class ChatWindow implements ChatView { // Implement the interface
+public class ServerWindow implements ServerView { // Implement the interface
 
     private JFrame frame;
+
     private JTextArea textArea;
     private JTextField textField;
-    private JButton sendButton;
-    private ClientLogic clientLogic; // Reference to the logic class
+
+
+    private CheckersServer serverLogic; // Reference to the logic class
 
     // Constructor takes the logic controller
-    public ChatWindow(ClientLogic clientLogic) {
-        this.clientLogic = clientLogic;
+    public ServerWindow(CheckersServer serverLogic) {
+        this.serverLogic = serverLogic;
 
-        this.clientLogic.setView(this);
+        this.serverLogic.setView(this);
         createAndShowGUI();
     }
 
@@ -53,7 +55,7 @@ public class ChatWindow implements ChatView { // Implement the interface
                 @Override
                 public void windowClosing(WindowEvent e) {
                     // Tell the logic to disconnect before closing
-                    clientLogic.disconnect();
+                    serverLogic.disconnect();
                     frame.dispose(); // Close the window
                     System.exit(0); // Exit application if this is the main window
                 }

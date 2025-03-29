@@ -23,6 +23,7 @@ public class CheckersServer implements Runnable { // Implement Runnable for the 
     private ClientHandler host = null;
     private ClientHandler white = null;
     private ClientHandler black = null;
+    private ServerWindow view;
 
     public CheckersServer(int port) {
         this.port = port;
@@ -30,7 +31,6 @@ public class CheckersServer implements Runnable { // Implement Runnable for the 
         this.clientExecutor = Executors.newCachedThreadPool();
     }
 
-    // --- Server Lifecycle Methods ---
 
     public void start() throws IOException {
         if (isRunning) {
@@ -104,8 +104,6 @@ public class CheckersServer implements Runnable { // Implement Runnable for the 
         System.out.println("Server stopped.");
     }
 
-    // --- Main Server Loop (runs in serverThread) ---
-
     @Override
     public void run() {
         System.out.println("Server accept loop started. Listening for connections...");
@@ -138,9 +136,6 @@ public class CheckersServer implements Runnable { // Implement Runnable for the 
     }
 
 
-    // --- Client Management Methods (Called by ClientHandler) ---
-
-    // Called by ClientHandler *after* username is received
     void registerClient(ClientHandler handler, String username) {
         if (username == null || username.trim().isEmpty()) {
             System.err.println("Attempt to register client with null or empty username.");
@@ -149,7 +144,7 @@ public class CheckersServer implements Runnable { // Implement Runnable for the 
         }
         if (clients.containsKey(username)) {
             System.err.println("Username '" + username + "' is already taken.");
-            handler.sendMessage("ERROR: Username '" + username + "' is already taken. Please reconnect with a different name.");
+            handler.sendResponse("ERROR: Username '" + username + "' is already taken. Please reconnect with a different name.");
             handler.closeConnection("Username taken");
             return;
         }
@@ -210,36 +205,33 @@ public class CheckersServer implements Runnable { // Implement Runnable for the 
         System.out.println("Broadcasting: " + message + (sender != null ? " (from " + sender.getUsername() + ")" : " (from Server)"));
         for (ClientHandler handler : handlersSnapshot) {
             if (handler != sender) { // Avoid sending message back to sender unless needed
-                handler.sendMessage(message);
+                handler.sendResponse(message);
             }
         }
     }
 
-    // --- Game Specific Logic Helper ---
-    // Needs refinement based on actual game flow requirements
     private synchronized void assignRoles(ClientHandler newHandler) {
         // Simple first-come, first-served assignment
         if (host == null) {
             host = newHandler;
-            newHandler.sendMessage("SERVER: You are the host.");
+            newHandler.sendResponse("SERVER: You are the host.");
             System.out.println(newHandler.getUsername() + " assigned as host.");
         }
 
         if (white == null) {
             white = newHandler;
-            newHandler.sendMessage("SERVER: You are playing as White.");
+            newHandler.sendResponse("SERVER: You are playing as White.");
             System.out.println(newHandler.getUsername() + " assigned as White.");
         } else if (black == null) {
             black = newHandler;
-            newHandler.sendMessage("SERVER: You are playing as Black.");
+            newHandler.sendResponse("SERVER: You are playing as Black.");
             System.out.println(newHandler.getUsername() + " assigned as Black.");
         } else {
-            newHandler.sendMessage("SERVER: The game is full, you are spectating.");
+            newHandler.sendResponse("SERVER: The game is full, you are spectating.");
             System.out.println(newHandler.getUsername() + " is spectating.");
         }
     }
 
-    // --- Getters (Optional, for status checking) ---
     public int getPort() {
         return port;
     }
@@ -249,141 +241,18 @@ public class CheckersServer implements Runnable { // Implement Runnable for the 
     }
 
     public Set<String> getConnectedUsernames() {
-        // Return a copy to prevent external modification
         synchronized (clients) {
             return new HashSet<>(clients.keySet());
         }
     }
 
-
-    // --- Inner ClientHandler Class ---
-    private static class ClientHandler implements Runnable { // Implement Runnable
-        private final Socket socket;
-        private final CheckersServer serverInstance; // Reference to the parent server
-        private PrintWriter out;
-        private BufferedReader in;
-        private volatile String username; // Make username volatile as it's set after thread start
-        private volatile boolean clientRunning = true;
-
-        public ClientHandler(Socket socket, CheckersServer serverInstance) {
-            this.socket = socket;
-            this.serverInstance = serverInstance; // Store the server instance
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        // Method to send a message to this specific client
-        public void sendMessage(String message) {
-            if (out != null && clientRunning) { // Check if output stream is ready and running
-                out.println(message);
-            }
-        }
-
-        // Send the list of currently connected users to this client
-        public void sendUserList() {
-            Set<String> userNames = serverInstance.getConnectedUsernames();
-            // Fix the user list string!
-            StringBuilder clientsList = new StringBuilder("Connected users (");
-            clientsList.append(userNames.size()).append("): "); // Use the actual size
-            clientsList.append(String.join(" ", userNames));
-            sendMessage(clientsList.toString());
-        }
-
-
-        @Override
-        public void run() {
-            try {
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                out = new PrintWriter(socket.getOutputStream(), true);
-
-                // 1. Get username
-                // Add a timeout for username entry?
-                String receivedUsername = in.readLine();
-                if (receivedUsername == null) {
-                    System.out.println("Client disconnected before sending username.");
-                    return; // Exit run method
-                }
-                this.username = receivedUsername.trim(); // Set the username for this handler
-
-
-                // 2. Register with the server *after* getting username
-                serverInstance.registerClient(this, this.username);
-                // If registration fails (e.g., duplicate name), registerClient will close the connection
-
-
-                // 3. Listen for messages from this client
-                String message;
-                while (clientRunning && (message = in.readLine()) != null) {
-                    System.out.println(username + ": " + message); // Log server side
-
-                    // Process potential commands or broadcast chat
-                    // TODO: Add command parsing logic here (e.g., "/move", "/resign")
-                    if (message.startsWith("/")) {
-                        handleCommand(message);
-                    } else {
-                        // Broadcast chat message
-                        serverInstance.broadcastMessage(username + ": " + message, this);
-                    }
-                }
-
-            } catch (SocketException e) {
-                if (!clientRunning) {
-                    System.out.println("Client socket closed for " + (username != null ? username : "unknown user") + " as requested.");
-                } else {
-                    System.err.println("SocketException for " + (username != null ? username : "unknown user") + ": " + e.getMessage() + " (Likely client disconnected abruptly)");
-                }
-            }
-            catch (IOException e) {
-                if (clientRunning) { // Avoid error message if we closed intentionally
-                    System.err.println("IOException for client " + (username != null ? username : "unknown user") + ": " + e.getMessage());
-                    e.printStackTrace();
-                }
-            } finally {
-                closeConnection(null); // Ensure cleanup happens
-            }
-            System.out.println("Client handler finished for: " + (username != null ? username : "unknown user"));
-        }
-
-        private void handleCommand(String command) {
-            // Basic command handling placeholder
-            System.out.println("Received command from " + username + ": " + command);
-            sendMessage("SERVER: Command '" + command + "' received (not implemented yet).");
-            // Example: if (command.equalsIgnoreCase("/ready")) { serverInstance.markPlayerReady(this); }
-        }
-
-        // Gracefully close connection for this client
-        public void closeConnection(String reason) {
-            if (!clientRunning) return; // Already closing/closed
-            clientRunning = false; // Signal loops to stop
-
-            System.out.println("Closing connection for " + (username != null ? username : "unknown user") + (reason != null ? ". Reason: " + reason : ""));
-
-            // Unregister *before* closing socket if possible
-            serverInstance.unregisterClient(this);
-
-            try {
-                if (socket != null && !socket.isClosed()) {
-                    // Maybe send a final "goodbye" message before closing?
-                    // sendMessage("SERVER: Disconnecting. " + (reason != null ? reason : ""));
-                    socket.close(); // This also closes associated streams (in/out)
-                }
-            } catch (IOException e) {
-                System.err.println("Error closing socket for " + (username != null ? username : "unknown user") + ": " + e.getMessage());
-            } finally {
-                // Nullify resources
-                in = null;
-                out = null;
-            }
-        }
-    }
-
-
     // --- Main method (for standalone execution) ---
     public static void main(String[] args) {
         final int DEFAULT_PORT = 5000;
         CheckersServer server = new CheckersServer(DEFAULT_PORT);
+
+        ServerWindow window = new ServerWindow(server);
+
         try {
             server.start();
 
@@ -404,4 +273,6 @@ public class CheckersServer implements Runnable { // Implement Runnable for the 
         }
         // Note: If start() throws an exception, the shutdown hook won't have anything to stop.
     }
+
+    public void setView(ServerWindow serverWindow) {this.view = serverWindow;}
 }

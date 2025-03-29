@@ -67,7 +67,8 @@ public class ClientLogic {
             e.printStackTrace();
             return false;
         } catch (IOException e) {
-            if (view != null) view.showErrorMessage("Connection Error", "Couldn't connect to server: " + e.getMessage());
+            if (view != null)
+                view.showErrorMessage("Connection Error", "Couldn't connect to server: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -101,16 +102,17 @@ public class ClientLogic {
         } catch (SocketException e) {
             if (isRunning.get()) { // Only show error if we didn't intentionally disconnect
                 System.err.println("SocketException in listener: " + e.getMessage() + " (Likely server disconnected)");
-                if(view != null) javax.swing.SwingUtilities.invokeLater(() -> view.showErrorMessage("Connection Lost", "Lost connection to the server."));
+                if (view != null)
+                    javax.swing.SwingUtilities.invokeLater(() -> view.showErrorMessage("Connection Lost", "Lost connection to the server."));
             } else {
                 System.out.println("Listener stopped due to intended disconnect.");
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             if (isRunning.get()) {
                 System.err.println("IOException in listener: " + e.getMessage());
                 e.printStackTrace();
-                if(view != null) javax.swing.SwingUtilities.invokeLater(() -> view.showErrorMessage("Network Error", "Error reading from server: " + e.getMessage()));
+                if (view != null)
+                    javax.swing.SwingUtilities.invokeLater(() -> view.showErrorMessage("Network Error", "Error reading from server: " + e.getMessage()));
             }
         } finally {
             // Ensure cleanup happens even if loop exits unexpectedly
@@ -127,7 +129,8 @@ public class ClientLogic {
                 javax.swing.SwingUtilities.invokeLater(() -> view.clearInputField());
             }
         } else if (!isRunning.get()) {
-            if (view != null) javax.swing.SwingUtilities.invokeLater(() -> view.showErrorMessage("Send Error", "Not connected to the server."));
+            if (view != null)
+                javax.swing.SwingUtilities.invokeLater(() -> view.showErrorMessage("Send Error", "Not connected to the server."));
         }
     }
 
@@ -146,7 +149,8 @@ public class ClientLogic {
             out.println(commandString.toString());
         } else {
             System.err.println("Cannot send command - not connected.");
-            if (view != null) javax.swing.SwingUtilities.invokeLater(() -> view.showErrorMessage("Command Error", "Not connected, cannot send command."));
+            if (view != null)
+                javax.swing.SwingUtilities.invokeLater(() -> view.showErrorMessage("Command Error", "Not connected, cannot send command."));
         }
     }
 
