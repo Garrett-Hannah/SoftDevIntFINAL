@@ -1,6 +1,6 @@
-package chModel.Checkers.Pieces;
+package MVC.chModel.Checkers.Pieces;
 
-import chModel.Checkers.Position;
+import MVC.chModel.Checkers.Position;
 
 public class SerfPiece extends AbstractPiece {
 

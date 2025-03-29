@@ -1,4 +1,4 @@
-package chModel.Math;
+package MVC.chModel.Math;
 
 public class Vector2i {
     public int x, y;

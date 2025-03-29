@@ -1,7 +1,7 @@
-package chModel.Checkers;
+package MVC.chModel.Checkers;
 
 import chGameUtil.BoardHelperSingleton;
-import chModel.Math.Vector2i;
+import MVC.chModel.Math.Vector2i;
 
 
 import static java.util.Objects.hash;

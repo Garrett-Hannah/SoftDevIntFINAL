@@ -1,10 +1,10 @@
 package ModelTest;
 
 import chGameUtil.BoardHelperSingleton;
-import chModel.Checkers.Pieces.AbstractPiece;
-import chModel.Checkers.Pieces.SerfPiece;
-import chModel.Checkers.Position;
-import chModel.Math.Vector2i;
+import MVC.chModel.Checkers.Pieces.AbstractPiece;
+import MVC.chModel.Checkers.Pieces.SerfPiece;
+import MVC.chModel.Checkers.Position;
+import MVC.chModel.Math.Vector2i;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;

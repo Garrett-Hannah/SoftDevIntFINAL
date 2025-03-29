@@ -1747,7 +1747,7 @@ package chView;
 
 public class CheckersBoard {
 }
-package chViewModel;
+package chController;
 
 public class CheckerBoard {
 }

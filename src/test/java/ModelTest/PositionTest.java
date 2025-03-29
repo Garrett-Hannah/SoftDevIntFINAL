@@ -1,8 +1,7 @@
 package ModelTest;
 
 import chGameUtil.BoardHelperSingleton;
-import chModel.Checkers.Position;
-import chModel.Math.Vector2i;
+import MVC.chModel.Checkers.Position;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

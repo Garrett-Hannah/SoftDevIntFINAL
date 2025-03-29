@@ -1,6 +1,6 @@
-package chModel.Checkers;
+package MVC.chModel.Checkers;
 
-import chModel.Checkers.Pieces.AbstractPiece;
+import MVC.chModel.Checkers.Pieces.AbstractPiece;
 
 import java.util.HashMap;
 

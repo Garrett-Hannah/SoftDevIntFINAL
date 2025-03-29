@@ -1,9 +1,10 @@
-package chModel.Checkers;
+package MVC.chController;
 
-import chModel.Checkers.Pieces.AbstractPiece;
+import MVC.chModel.Checkers.Pieces.AbstractPiece;
+import MVC.chModel.Checkers.Position;
 
 //I dont think that users should be able to
-public interface BoardView {
+public interface BoardController {
 
     void MovePiece(AbstractPiece piece, Position newPosition); //Function that takes a piece and set new position.
     //Function to get the piece at a position.

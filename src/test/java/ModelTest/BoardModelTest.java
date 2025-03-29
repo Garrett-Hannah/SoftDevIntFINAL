@@ -1,10 +1,10 @@
 package ModelTest;
 
 import chGameUtil.BoardHelperSingleton;
-import chModel.Checkers.BoardModel;
-import chModel.Checkers.Pieces.AbstractPiece;
-import chModel.Checkers.Position;
-import chModel.Checkers.Pieces.SerfPiece;
+import MVC.chModel.Checkers.BoardModel;
+import MVC.chModel.Checkers.Pieces.AbstractPiece;
+import MVC.chModel.Checkers.Position;
+import MVC.chModel.Checkers.Pieces.SerfPiece;
 import org.junit.jupiter.api.*;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package chView;
+package MVC;
 
 public class CheckersBoard {
 }

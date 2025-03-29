@@ -26,7 +26,7 @@ public class ServerWindow implements ServerView { // Implement the interface
     private void createAndShowGUI() {
         // Use SwingUtilities.invokeLater to ensure GUI creation is on the EDT
         SwingUtilities.invokeLater(() -> {
-            frame = new JFrame("Chat Client"); // Initial title
+            frame = new JFrame("Server Client Log"); // Initial title
             textArea = new JTextArea();
             textArea.setEditable(false);
             textArea.setLineWrap(true);

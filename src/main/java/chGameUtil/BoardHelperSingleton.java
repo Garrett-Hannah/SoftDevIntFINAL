@@ -1,7 +1,6 @@
 package chGameUtil;
 
-import chModel.Checkers.BoardModel;
-import chModel.Checkers.Position;
+import MVC.chModel.Checkers.BoardModel;
 
 public class BoardHelperSingleton {
     private static BoardHelperSingleton instance;

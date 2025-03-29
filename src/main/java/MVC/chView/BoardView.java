@@ -1,13 +1,15 @@
-package chModel.Checkers;
+package MVC.chView;
 
-import chModel.Checkers.Pieces.AbstractPiece;
+import MVC.chController.BoardController;
+import MVC.chModel.Checkers.Pieces.AbstractPiece;
+import MVC.chModel.Checkers.Position;
 import chNetwork.Client.ClientLogic;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
-public class BoardWindow implements BoardView{
+public class BoardView implements BoardController {
 
 
 
@@ -19,7 +21,7 @@ public class BoardWindow implements BoardView{
     ArrayList<JButton> boardButtons;
 
 
-    BoardWindow(ClientLogic clientLogic)
+    BoardView(ClientLogic clientLogic)
     {
         this.clientLogic = clientLogic;
 
@@ -97,7 +99,7 @@ public class BoardWindow implements BoardView{
 
         ClientLogic clientLogic1 = new ClientLogic("localhost", 5000);
 
-        BoardWindow boardWindow = new BoardWindow(clientLogic1);
+        BoardView boardWindow = new BoardView(clientLogic1);
 
         boolean connected = clientLogic1.connect("boardTest");
 

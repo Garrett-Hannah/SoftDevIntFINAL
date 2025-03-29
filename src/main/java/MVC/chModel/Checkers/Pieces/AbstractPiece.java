@@ -1,10 +1,10 @@
-package chModel.Checkers.Pieces;
+package MVC.chModel.Checkers.Pieces;
 
 import chGameUtil.BoardHelperSingleton;
 import chGameUtil.IncrementerSingleton;
-import chModel.Checkers.BoardModel;
-import chModel.Checkers.Position;
-import chModel.Math.Vector2i;
+import MVC.chModel.Checkers.BoardModel;
+import MVC.chModel.Checkers.Position;
+import MVC.chModel.Math.Vector2i;
 
 import java.util.ArrayList;
 
