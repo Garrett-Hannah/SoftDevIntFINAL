@@ -1,7 +1,7 @@
 package NetworkTesting;
 
 
-import chNetwork.Server.ServerLogic;
+import chkNetwork.Server.ServerLogic;
 
 public class ServerClientTesting {
 

@@ -1,7 +1,7 @@
 package ModelTest;
 
-import chGameUtil.BoardHelperSingleton;
-import MVC.chModel.Checkers.Position;
+import chkMVC.chModel.Checkers.BoardModel;
+import chkMVC.chModel.Checkers.Position;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -11,16 +11,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PositionTest {
 
+    private static BoardModel gameBoardModel;
+
     @BeforeAll
     static void start()
     {
-        BoardHelperSingleton.initialize(8);
+        gameBoardModel = new BoardModel(8);
     }
 
     @Test
     void initGoodPosition()
     {
-        Position goodPosition = new Position(4, 4);
+        Position goodPosition = gameBoardModel.createPosition(4, 4);
 
         Assertions.assertTrue(goodPosition != null, " Error with position declaration!");
     }
@@ -28,11 +30,11 @@ public class PositionTest {
     @Test
     void testLinPositionFromInt()
     {
-        Position pA1 = Position.positionFromInt(0);
-        Assertions.assertEquals(new Position(1, 1), pA1, "Position was not expected.");
+        Position pA1 = gameBoardModel.positionFromInt(0);
+        Assertions.assertEquals(gameBoardModel.createPosition(1, 1), pA1, "Position was not expected.");
 
-        Position pH8 = Position.positionFromInt(63);
-        Assertions.assertEquals(new Position(8, 8), pH8, "Position was not expected.");
+        Position pH8 = gameBoardModel.positionFromInt(63);
+        Assertions.assertEquals(gameBoardModel.createPosition(8, 8), pH8, "Position was not expected.");
     }
 
     @Test
@@ -40,18 +42,17 @@ public class PositionTest {
     {
         // Expecting IllegalArgumentException
         assertThrows(IllegalArgumentException.class, () -> {
-            Position.positionFromInt(65);
+            gameBoardModel.positionFromInt(65);
         }, "Piece should throw an exception for illegal moves.");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            Position.positionFromInt(-1);
+            gameBoardModel.positionFromInt(-1);
         }, "Piece should throw an exception for illegal moves.");
     }
-
 
     @AfterAll
     static void breakDown()
     {
-        BoardHelperSingleton.getInstance().closeBoard();
+
     }
 }

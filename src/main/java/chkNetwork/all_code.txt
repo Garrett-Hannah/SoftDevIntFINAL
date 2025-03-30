@@ -1,0 +1,1163 @@
+package chkNetwork;
+
+public enum CLIENT_REQUEST_CODES {
+
+    // Connection requests
+    CONNECT(1000),
+    DISCONNECT(1001),
+    PING(1002),
+
+    // Game-related requests
+    JOIN_GAME(1100),
+    LEAVE_GAME(1101),
+    START_GAME(1102),
+
+    // Player actions (Checkers specific)
+    MOVE_PIECE(1200),      // Move a piece (normal or jump)
+    END_TURN(1201),        // End turn manually (if needed)
+    FORFEIT_GAME(1202),    // Player gives up
+    REQUEST_REMATCH(1203), // Ask for a rematch
+    SEND_CHAT_MESSAGE(1204); // Send a chat message
+
+    private final int code;
+
+    CLIENT_REQUEST_CODES(int code) {
+        this.code = code;
+    }
+
+    public int getCode() {
+        return code;
+    }
+}
+package chkNetwork;
+
+import chkNetwork.Server.ServerLogic;
+
+import java.io.IOException;
+import java.util.Scanner;
+
+public class ServerRunnerEntrypoint {
+
+    public static void main(String[] args) {
+        ServerLogic myServer = new ServerLogic(5000); // Use a specific port
+
+        try {
+            myServer.start(); // Start the server in the background
+
+            System.out.println("Server started. Press Enter to stop.");
+
+            // Keep the main application running, wait for user input to stop
+            Scanner scanner = new Scanner(System.in);
+            scanner.nextLine(); // Wait for Enter key
+
+        } catch (IOException e) {
+            System.err.println("Error starting server: " + e.getMessage());
+        } finally {
+            System.out.println("Requesting server stop...");
+            myServer.stop(); // Stop the server gracefully
+            System.out.println("Server should now be stopped.");
+        }
+    }
+}
+package chkNetwork;
+
+public enum SERVER_RESPONSE_CODES {
+
+    // General success & error responses
+    SUCCESS(2000),
+    ERROR(2001),
+    INVALID_REQUEST(2002),
+
+    // Game state updates
+    GAME_STATE_UPDATE(2100),  // Broadcast updated board state
+    GAME_START(2101),         // Game officially starts
+    GAME_END(2102),           // Game ends
+    ROUND_UPDATE(2103),       // Round state update
+    PLAYER_JOINED(2104),      // A new player has joined
+    PLAYER_LEFT(2105),        // A player left the game
+
+    // Player actions & validation
+    MOVE_ACCEPTED(2200),      // Move was valid
+    MOVE_REJECTED(2201),      // Move was invalid
+    INVALID_TURN(2202),       // Player moved when it's not their turn
+    ACTION_NOT_ALLOWED(2203), // Player action not allowed (e.g., wrong piece type)
+
+    // Connection & server issues
+    SERVER_ERROR(2300),       // Internal server issue
+    CONNECTION_LOST(2301),    // Player lost connection
+    RECONNECT_SUCCESS(2302),  // Reconnection successful
+    TIMEOUT_WARNING(2303),    // Player timeout warning
+
+    // Messaging & events
+    CHAT_MESSAGE(2400),       // Chat message received
+    NOTIFICATION(2401);       // General game notifications (e.g., "Your turn!")
+
+    private final int code;
+
+    SERVER_RESPONSE_CODES(int code) {
+        this.code = code;
+    }
+
+    public int getCode() {
+        return code;
+    }
+}
+package chkNetwork.Client;
+
+// Class for things required
+public interface ChatView {
+    void appendMessage(String message);
+    void showErrorMessage(String title, String message);
+    void clearInputField();
+    void setWindowTitle(String title);
+    void closeWindow();
+}
+package chkNetwork.Client;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+//This class takes the implements the functions required in the view...
+public class ChatWindow implements ChatView { // Implement the interface
+
+    private JFrame frame;
+    private JTextArea textArea;
+    private JTextField textField;
+    private JButton sendButton;
+    private ClientLogic clientLogic; // Reference to the logic class
+
+    // Constructor takes the logic controller
+    public ChatWindow(ClientLogic clientLogic) {
+        this.clientLogic = clientLogic;
+
+        this.clientLogic.setView(this);
+        createAndShowGUI();
+    }
+
+    private void createAndShowGUI() {
+        // Use SwingUtilities.invokeLater to ensure GUI creation is on the EDT
+        SwingUtilities.invokeLater(() -> {
+            frame = new JFrame("Chat Client"); // Initial title
+            textArea = new JTextArea();
+            textArea.setEditable(false);
+            textArea.setLineWrap(true);
+            JScrollPane scrollPane = new JScrollPane(textArea);
+
+            textField = new JTextField();
+            sendButton = new JButton("Send");
+
+            // Action listener now calls the logic's method
+            ActionListener sendAction = e -> handleSendAction();
+            textField.addActionListener(sendAction);
+            sendButton.addActionListener(sendAction);
+
+            frame.setLayout(new BorderLayout());
+            frame.add(scrollPane, BorderLayout.CENTER);
+            JPanel bottomPanel = new JPanel();
+            bottomPanel.setLayout(new BorderLayout());
+            bottomPanel.add(textField, BorderLayout.CENTER);
+            bottomPanel.add(sendButton, BorderLayout.EAST);
+            frame.add(bottomPanel, BorderLayout.SOUTH);
+
+            frame.setSize(400, 300);
+            // Change default close operation to notify logic
+            frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    // Tell the logic to disconnect before closing
+                    clientLogic.disconnect();
+                    frame.dispose(); // Close the window
+                    System.exit(0); // Exit application if this is the main window
+                }
+            });
+
+            frame.setVisible(true);
+            textField.requestFocusInWindow(); // Set focus to input field
+        });
+    }
+
+    // Handles sending text from the input field
+    private void handleSendAction() {
+        String message = textField.getText();
+        if (!message.trim().isEmpty()) {
+            // Check if it's a command (e.g., starts with '/') or plain chat
+            if (message.startsWith("/")) {
+                // Basic command parsing (needs improvement)
+                // Example: /move A1 B2 -> sendCommand(MOVE, ["A1", "B2"])
+                // This parsing logic might live here or be passed to clientLogic
+                System.out.println("Command detected (implement parsing): " + message);
+                // clientLogic.parseAndSendCommand(message); // You'd need this method in CheckersClient
+                appendMessage("Client: Command handling not fully implemented yet."); // Feedback
+                textField.setText("");
+            } else {
+                // Send as regular chat message via the logic class
+                clientLogic.sendMessage(message);
+                // Logic class now calls clearInputField via the interface upon success
+            }
+        }
+    }
+
+    // --- Implementation of ChatView Interface ---
+
+    //Push new message onto stack.
+    @Override
+    public void appendMessage(String message) {
+        // Ensure updates are on the EDT (already handled if called via SwingUtilities.invokeLater)
+        if (SwingUtilities.isEventDispatchThread()) {
+            textArea.append(message + "\n");
+            // Auto-scroll to bottom
+            textArea.setCaretPosition(textArea.getDocument().getLength());
+        } else {
+            SwingUtilities.invokeLater(() -> appendMessage(message));
+        }
+    }
+
+    @Override
+    public void showErrorMessage(String title, String message) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            JOptionPane.showMessageDialog(frame, message, title, JOptionPane.ERROR_MESSAGE);
+        } else {
+            SwingUtilities.invokeLater(() -> showErrorMessage(title, message));
+        }
+    }
+
+    @Override
+    public void clearInputField() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            textField.setText("");
+        } else {
+            SwingUtilities.invokeLater(this::clearInputField);
+        }
+    }
+
+    @Override
+    public void setWindowTitle(String title) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            frame.setTitle(title);
+        } else {
+            SwingUtilities.invokeLater(() -> setWindowTitle(title));
+        }
+    }
+
+    @Override
+    public void closeWindow() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            frame.dispose();
+        } else {
+            SwingUtilities.invokeLater(this::closeWindow);
+        }
+    }
+
+
+    // --- Main method to launch the application ---
+    public static void main(String[] args) {
+        // 1. Get username
+        String username = JOptionPane.showInputDialog("Enter your username:");
+        if (username == null || username.trim().isEmpty()) {
+            System.out.println("Username cancelled or empty. Exiting.");
+            System.exit(0);
+        }
+
+        // 2. Create the logic component
+        // Ideally, get host/port from config or args
+        ClientLogic clientLogic = new ClientLogic("localhost", 5000);
+
+        // 3. Create the GUI component (View) and link it to the logic
+        // The ChatWindow constructor now calls clientLogic.setView(this)
+        ChatWindow chatWindow = new ChatWindow(clientLogic);
+
+        // 4. Attempt to connect (after GUI is initialized and linked)
+        boolean connected = clientLogic.connect(username);
+
+        if (!connected) {
+            // Handle connection failure - maybe close the initial window
+            System.err.println("Initial connection failed. Exiting.");
+            // Ensure GUI resources are cleaned up if connection fails immediately
+            SwingUtilities.invokeLater(() -> {
+                if (chatWindow.frame != null) {
+                    chatWindow.frame.dispose();
+                }
+            });
+            System.exit(1); // Exit with error status
+        }
+
+        // Application is now running, driven by events and the listener thread...
+        System.out.println("Application setup complete. GUI visible. Listening for messages.");
+    }
+}
+package chkNetwork.Client;
+
+import chkNetwork.CLIENT_REQUEST_CODES;
+
+import java.io.*;
+import java.net.*;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public class ClientLogic {
+
+    private final String host;
+    private final int port;
+    private String username;
+    private Socket socket;
+    private PrintWriter out;
+    private BufferedReader in;
+    private ChatView view; // Reference to the GUI
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
+    private final ExecutorService networkExecutor = Executors.newSingleThreadExecutor(); // For listener thread
+
+    public ClientLogic(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
+
+    // Setter for the View (GUI)
+    public void setView(ChatView view) {
+        this.view = view;
+    }
+
+    // Attempt to connect to the server
+    public boolean connect(String username) {
+        if (isRunning.get()) {
+            System.err.println("Already connected or connecting.");
+            return true; // Or false, depending on desired behavior
+        }
+        this.username = username;
+        if (this.username == null || this.username.trim().isEmpty()) {
+            if (view != null) view.showErrorMessage("Login Error", "Username cannot be empty.");
+            return false;
+        }
+
+        try {
+            socket = new Socket(host, port);
+            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            // Send username immediately
+            out.println(this.username);
+
+            // Start the listener thread using an ExecutorService
+            isRunning.set(true);
+            networkExecutor.submit(this::listenToServer); // Pass method reference
+
+            if (view != null) {
+                view.setWindowTitle(this.username + "'s Chat Client - Connected");
+            }
+            System.out.println("Connected successfully as " + this.username);
+            return true;
+
+        } catch (UnknownHostException e) {
+            if (view != null) view.showErrorMessage("Connection Error", "Unknown host: " + host);
+            e.printStackTrace();
+            return false;
+        } catch (IOException e) {
+            if (view != null)
+                view.showErrorMessage("Connection Error", "Couldn't connect to server: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Background task to listen for messages from the server
+    private void listenToServer() {
+        try {
+            String messageFromServer;
+            while (isRunning.get() && (messageFromServer = in.readLine()) != null) {
+                // Process different types of messages from server
+                // For now, just display everything
+                if (view != null) {
+                    // Ensure GUI updates happen on the Event Dispatch Thread
+                    final String finalMessage = messageFromServer; // Need final variable for lambda
+                    javax.swing.SwingUtilities.invokeLater(() -> view.appendMessage(finalMessage));
+                } else {
+                    System.out.println("Received (no view): " + messageFromServer);
+                }
+
+                // Example: Check for specific server messages
+                if ("ERROR: Username".equals(messageFromServer.substring(0, Math.min(messageFromServer.length(), 16)))) {
+                    String finalMessageFromServer = messageFromServer;
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+                        view.showErrorMessage("Login Failed", finalMessageFromServer);
+                        disconnect(); // Disconnect if username is invalid/taken
+                        view.closeWindow(); // Maybe close the window too
+                    });
+                }
+            }
+        } catch (SocketException e) {
+            if (isRunning.get()) { // Only show error if we didn't intentionally disconnect
+                System.err.println("SocketException in listener: " + e.getMessage() + " (Likely server disconnected)");
+                if (view != null)
+                    javax.swing.SwingUtilities.invokeLater(() -> view.showErrorMessage("Connection Lost", "Lost connection to the server."));
+            } else {
+                System.out.println("Listener stopped due to intended disconnect.");
+            }
+        } catch (IOException e) {
+            if (isRunning.get()) {
+                System.err.println("IOException in listener: " + e.getMessage());
+                e.printStackTrace();
+                if (view != null)
+                    javax.swing.SwingUtilities.invokeLater(() -> view.showErrorMessage("Network Error", "Error reading from server: " + e.getMessage()));
+            }
+        } finally {
+            // Ensure cleanup happens even if loop exits unexpectedly
+            disconnect(); // Clean up resources if listener thread ends
+            System.out.println("Server listener thread finished.");
+        }
+    }
+
+    // Send a standard chat message
+    public void sendMessage(String message) {
+        if (out != null && isRunning.get() && message != null && !message.trim().isEmpty()) {
+            out.println(message);
+            if (view != null) {
+                javax.swing.SwingUtilities.invokeLater(() -> view.clearInputField());
+            }
+        } else if (!isRunning.get()) {
+            if (view != null)
+                javax.swing.SwingUtilities.invokeLater(() -> view.showErrorMessage("Send Error", "Not connected to the server."));
+        }
+    }
+
+    // Send a formatted command (implementation based on your previous request)
+    public void sendCommand(CLIENT_REQUEST_CODES request, List<String> args) {
+        if (out != null && isRunning.get()) {
+            StringBuilder commandString = new StringBuilder();
+            commandString.append("/").append(request.name()); // Assuming commands start with '/'
+            if (args != null && !args.isEmpty()) {
+                for (String arg : args) {
+                    // Basic argument joining, might need better escaping if args can contain spaces
+                    commandString.append(" ").append(arg);
+                }
+            }
+            System.out.println("Sending command: " + commandString); // Log command
+            out.println(commandString.toString());
+        } else {
+            System.err.println("Cannot send command - not connected.");
+            if (view != null)
+                javax.swing.SwingUtilities.invokeLater(() -> view.showErrorMessage("Command Error", "Not connected, cannot send command."));
+        }
+    }
+
+
+    // Disconnect from the server and clean up resources
+    public void disconnect() {
+        if (!isRunning.compareAndSet(true, false)) {
+            return; // Already disconnected or not connected
+        }
+        System.out.println("Disconnecting...");
+
+        networkExecutor.shutdown(); // Signal listener thread to stop accepting tasks
+
+        try {
+            if (socket != null && !socket.isClosed()) {
+                socket.close(); // This will cause readLine() in listener to throw SocketException
+            }
+        } catch (IOException e) {
+            System.err.println("Error closing socket: " + e.getMessage());
+        } finally {
+            // Nullify resources
+            in = null;
+            out = null;
+            socket = null;
+            if (view != null) {
+                javax.swing.SwingUtilities.invokeLater(() -> view.setWindowTitle(this.username + "'s Chat Client - Disconnected"));
+            }
+            System.out.println("Disconnected.");
+        }
+        try {
+            // Wait for the listener thread to terminate
+            if (!networkExecutor.awaitTermination(2, TimeUnit.SECONDS)) {
+                networkExecutor.shutdownNow(); // Force stop if it doesn't finish
+            }
+        } catch (InterruptedException e) {
+            networkExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+}
+package chkNetwork.Client;
+
+/***
+ * This Class is like super duper important for server things (not really)...
+ *
+ * it just sends things as simple events.
+ * This is going to be the class that
+ * kind of helps with that stuff...
+ */
+public class clientRequest {
+
+    public clientRequest()
+    {
+
+    }
+
+
+
+
+}
+package chkNetwork.Server;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.Set;
+
+class ClientHandler implements Runnable { // Implement Runnable
+
+    private final Socket socket;
+    private final ServerLogic serverInstance; // Reference to the parent server
+    private PrintWriter out;
+    private BufferedReader in;
+    private volatile String username; // Make username volatile as it's set after thread start
+    private volatile boolean clientRunning = true;
+
+    public ClientHandler(Socket socket, ServerLogic serverInstance) {
+        this.socket = socket;
+        this.serverInstance = serverInstance; // Store the server instance
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    // Method to send a message to this specific client
+    public void sendResponse(String message) {
+        if (out != null && clientRunning) { // Check if output stream is ready and running
+            out.println(message);
+        }
+    }
+
+    // Send the list of currently connected users to this client
+    public void sendUserList() {
+        Set<String> userNames = serverInstance.getConnectedUsernames();
+        // Fix the user list string!
+        StringBuilder clientsList = new StringBuilder("Connected users (");
+        clientsList.append(userNames.size()).append("): "); // Use the actual size
+        clientsList.append(String.join(" ", userNames));
+        sendResponse(clientsList.toString());
+    }
+
+
+    @Override
+    public void run() {
+        try {
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+
+            // 1. Get username
+            // Add a timeout for username entry?
+            String receivedUsername = in.readLine();
+            if (receivedUsername == null) {
+                System.out.println("Client disconnected before sending username.");
+                return; // Exit run method
+            }
+            this.username = receivedUsername.trim(); // Set the username for this handler
+
+
+            serverInstance.registerClient(this, this.username);
+            // If registration fails (e.g., duplicate name), registerClient will close the connection
+
+
+            // 3. Listen for messages from this client
+            String message;
+            while (clientRunning && (message = in.readLine()) != null) {
+                System.out.println(username + ": " + message); // Log server side
+
+                // Process potential commands or broadcast chat
+                // TODO: Add command parsing logic here (e.g., "/move", "/resign")
+                if (message.startsWith("/")) {
+                    handleCommand(message);
+                } else {
+                    // Broadcast chat message
+                    serverInstance.broadcastMessage(username + ": " + message, this);
+                }
+            }
+
+        } catch (SocketException e) {
+            if (!clientRunning) {
+                System.out.println("Client socket closed for " + (username != null ? username : "unknown user") + " as requested.");
+            } else {
+                System.err.println("SocketException for " + (username != null ? username : "unknown user") + ": " + e.getMessage() + " (Likely client disconnected abruptly)");
+            }
+        } catch (IOException e) {
+            if (clientRunning) { // Avoid error message if we closed intentionally
+                System.err.println("IOException for client " + (username != null ? username : "unknown user") + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        } finally {
+            closeConnection(null); // Ensure cleanup happens
+        }
+        System.out.println("Client handler finished for: " + (username != null ? username : "unknown user"));
+    }
+
+    private void handleCommand(String command) {
+        // Basic command handling placeholder
+        System.out.println("Received command from " + username + ": " + command);
+        sendResponse("SERVER: Command '" + command + "' received (not implemented yet).");
+        // Example: if (command.equalsIgnoreCase("/ready")) { serverInstance.markPlayerReady(this); }
+    }
+
+    // Gracefully close connection for this client
+    public void closeConnection(String reason) {
+        if (!clientRunning) return; // Already closing/closed
+        clientRunning = false; // Signal loops to stop
+
+        System.out.println("Closing connection for " + (username != null ? username : "unknown user") + (reason != null ? ". Reason: " + reason : ""));
+
+        // Unregister *before* closing socket if possible
+        serverInstance.unregisterClient(this);
+
+        try {
+            if (socket != null && !socket.isClosed()) {
+                // Maybe send a final "goodbye" message before closing?
+                // sendMessage("SERVER: Disconnecting. " + (reason != null ? reason : ""));
+                socket.close(); // This also closes associated streams (in/out)
+            }
+        } catch (IOException e) {
+            System.err.println("Error closing socket for " + (username != null ? username : "unknown user") + ": " + e.getMessage());
+        } finally {
+            // Nullify resources
+            in = null;
+            out = null;
+        }
+    }
+}
+
+package chkNetwork.Server;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+public class ServerLogic implements Runnable { // Implement Runnable for the main accept loop
+
+    private final int port;
+    private ServerSocket serverSocket;
+    private volatile boolean isRunning = false; // Flag to control the main loop
+    private Thread serverThread; // Thread running the accept loop
+    private final ExecutorService clientExecutor; // To manage client handler threads
+
+    // Instance fields instead of static
+    private final Set<ClientHandler> clientHandlers = Collections.synchronizedSet(new HashSet<>());
+    private final Map<String, ClientHandler> clients = Collections.synchronizedMap(new HashMap<>());
+
+    // Game-specific logic (still needs proper integration)
+    private ClientHandler host = null;
+    private ClientHandler white = null;
+    private ClientHandler black = null;
+    private ServerView view;
+
+    // Setter for the View (GUI)
+    public void setView(ServerView view) {
+        this.view = view;
+    }
+
+    public ServerLogic(int port) {
+        this.port = port;
+        // Use a thread pool for client handlers for better resource management
+        this.clientExecutor = Executors.newCachedThreadPool();
+    }
+
+
+    public void start() throws IOException {
+        if (isRunning) {
+            System.out.println("Server is already running on port " + port);
+            return;
+        }
+        System.out.println("Starting Checkers server on port " + port + "...");
+        serverSocket = new ServerSocket(port);
+        isRunning = true;
+        // Start the main accept loop in its own thread
+        serverThread = new Thread(this, "CheckersServer-AcceptThread");
+        serverThread.start();
+        System.out.println("Server started successfully.");
+    }
+
+    public void stop() {
+        if (!isRunning) {
+            System.out.println("Server is not running.");
+            return;
+        }
+        System.out.println("Stopping Checkers server...");
+        isRunning = false; // Signal the accept loop to stop
+
+        // Close the server socket - this will interrupt the accept() call
+        try {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                serverSocket.close(); // Causes SocketException in run() method's accept()
+            }
+        } catch (IOException e) {
+            System.err.println("Error closing server socket: " + e.getMessage());
+        }
+
+        // Gracefully shut down client threads
+        clientExecutor.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!clientExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                clientExecutor.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!clientExecutor.awaitTermination(5, TimeUnit.SECONDS))
+                    System.err.println("Client handler pool did not terminate");
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            clientExecutor.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
+
+        // Explicitly close remaining client sockets (redundant if shutdownNow worked)
+        // Use a copy to avoid ConcurrentModificationException while iterating and removing
+        synchronized (clientHandlers) {
+            Set<ClientHandler> handlersCopy = new HashSet<>(clientHandlers);
+            for(ClientHandler handler : handlersCopy) {
+                handler.closeConnection("Server shutting down");
+            }
+        }
+        clientHandlers.clear(); // Should be empty now
+        clients.clear();
+
+        // Wait for the server thread to die
+        try {
+            if (serverThread != null && serverThread.isAlive()) {
+                serverThread.join(1000); // Wait max 1 sec for the thread to finish
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("Interrupted while waiting for server thread to stop.");
+        }
+
+        System.out.println("Server stopped.");
+    }
+
+    @Override
+    public void run() {
+        System.out.println("Server accept loop started. Listening for connections...");
+        while (isRunning) {
+            try {
+                Socket clientSocket = serverSocket.accept(); // Blocking call
+                System.out.println("Connection received from " + clientSocket.getRemoteSocketAddress());
+                // Create and start a handler for the new client
+                ClientHandler handler = new ClientHandler(clientSocket, this); // Pass 'this' server instance
+                clientExecutor.submit(handler); // Use executor service
+                // handler.start(); // Old way: starting thread directly
+            } catch (SocketException e) {
+                // Expected when serverSocket.close() is called in stop()
+                if (!isRunning) {
+                    System.out.println("Server socket closed, accept loop terminating.");
+                } else {
+                    System.err.println("SocketException in accept loop: " + e.getMessage());
+                    // Consider whether to try and recover or shut down
+                    // stop(); // Option: Stop server on unexpected socket errors
+                }
+            } catch (IOException e) {
+                if (isRunning) {
+                    System.err.println("IOException in accept loop: " + e.getMessage());
+                    e.printStackTrace();
+                    // Consider stopping if the error is critical
+                }
+            }
+        }
+        System.out.println("Server accept loop finished.");
+    }
+
+
+    void registerClient(ClientHandler handler, String username) {
+        if (username == null || username.trim().isEmpty()) {
+            System.err.println("Attempt to register client with null or empty username.");
+            handler.closeConnection("Invalid username provided.");
+            return;
+        }
+        if (clients.containsKey(username)) {
+            System.err.println("Username '" + username + "' is already taken.");
+            handler.sendResponse("ERROR: Username '" + username + "' is already taken. Please reconnect with a different name.");
+            handler.closeConnection("Username taken");
+            return;
+        }
+
+        synchronized (clients) {
+            clients.put(username, handler);
+        }
+        synchronized (clientHandlers) {
+            clientHandlers.add(handler);
+        }
+
+        // Assign roles (basic example, needs more logic)
+        assignRoles(handler);
+
+        System.out.println(username + " successfully registered.");
+
+        // Send current user list to the new client
+        handler.sendUserList();
+
+        // Notify others
+        broadcastMessage(username + " has joined the chat!", handler); // Exclude sender
+    }
+
+    void unregisterClient(ClientHandler handler) {
+        String username = handler.getUsername(); // Get username before removing
+        boolean removed = false;
+        synchronized (clientHandlers) {
+            removed = clientHandlers.remove(handler);
+        }
+        if (username != null) {
+            synchronized (clients) {
+                clients.remove(username);
+            }
+            // Reset roles if the leaving client held one
+            if (handler == host) host = null;
+            if (handler == white) white = null;
+            if (handler == black) black = null;
+            // Could re-assign roles here if needed
+
+            System.out.println(username + " unregistered.");
+            if (removed) { // Only broadcast leave if they were fully registered
+                broadcastMessage(username + " has left the chat.", null); // Send to everyone
+            }
+        } else {
+            System.out.println("An unregistered client disconnected.");
+        }
+
+
+    }
+
+    void broadcastMessage(String message, ClientHandler sender) {
+        // Use a snapshot to avoid issues if clientHandlers changes during iteration
+        Set<ClientHandler> handlersSnapshot;
+        synchronized (clientHandlers) {
+            handlersSnapshot = new HashSet<>(clientHandlers);
+        }
+
+        System.out.println("Broadcasting: " + message + (sender != null ? " (from " + sender.getUsername() + ")" : " (from Server)"));
+        view.appendMessage(message);
+
+        for (ClientHandler handler : handlersSnapshot) {
+            if (handler != sender) {
+                handler.sendResponse(message);
+
+            }
+        }
+    }
+
+    private synchronized void assignRoles(ClientHandler newHandler) {
+        // Simple first-come, first-served assignment
+        if (host == null) {
+            host = newHandler;
+            newHandler.sendResponse("SERVER: You are the host.");
+            System.out.println(newHandler.getUsername() + " assigned as host.");
+        }
+
+        if (white == null) {
+            white = newHandler;
+            newHandler.sendResponse("SERVER: You are playing as White.");
+            System.out.println(newHandler.getUsername() + " assigned as White.");
+        } else if (black == null) {
+            black = newHandler;
+            newHandler.sendResponse("SERVER: You are playing as Black.");
+            System.out.println(newHandler.getUsername() + " assigned as Black.");
+        } else {
+            newHandler.sendResponse("SERVER: The game is full, you are spectating.");
+            System.out.println(newHandler.getUsername() + " is spectating.");
+        }
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    public Set<String> getConnectedUsernames() {
+        synchronized (clients) {
+            return new HashSet<>(clients.keySet());
+        }
+    }
+
+    // --- Main method (for standalone execution) ---
+    public static void main(String[] args) {
+        final int DEFAULT_PORT = 5000;
+
+        ServerLogic server = new ServerLogic(DEFAULT_PORT);
+
+        ServerWindow window = new ServerWindow(server);
+
+        try {
+            server.start();
+
+            // Keep the main thread alive, or add shutdown hooks
+            // Example: Add a shutdown hook to stop the server gracefully on Ctrl+C
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.out.println("Shutdown hook triggered. Stopping server...");
+                server.stop();
+            }));
+
+
+            // Keep main alive indefinitely (or until shutdown hook)
+            // server.serverThread.join(); // Alternatively, wait for the server thread itself
+
+
+        } catch (IOException e) {
+            System.err.println("Failed to start server on port " + DEFAULT_PORT + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+
+
+
+
+        // Note: If start() throws an exception, the shutdown hook won't have anything to stop.
+    }
+
+}
+package chkNetwork.Server;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+// Enum for different types of messages the server might send
+enum ResponseType {
+    JOIN_NOTIFICATION,  // "User X has joined..."
+    LEAVE_NOTIFICATION, // "User Y has left..."
+    BROADCAST_MESSAGE,  // "User Z: some message"
+    USER_LIST,          // "Connected users: A, B, C"
+    SERVER_MESSAGE,     // General server info/error
+    UNKNOWN             // If parsing fails
+}
+
+// The class to represent a structured server response
+class ServerResponse {
+    private final ResponseType type;
+    private final String sender;      // For BROADCAST, JOIN, LEAVE
+    private final String payload;     // Message content for BROADCAST, SERVER_MESSAGE
+    private final List<String> users; // For USER_LIST
+    private final String rawMessage;  // Keep the original for debugging
+
+    // Private constructor, use static factory method 'parse'
+    private ServerResponse(ResponseType type, String sender, String payload, List<String> users, String rawMessage) {
+        this.type = type;
+        this.sender = sender;
+        this.payload = payload;
+        this.users = users;
+        this.rawMessage = rawMessage;
+    }
+
+    // --- Getters ---
+    public ResponseType getType() { return type; }
+    public String getSender() { return sender; }
+    public String getPayload() { return payload; }
+    public List<String> getUsers() { return users; }
+    public String getRawMessage() { return rawMessage; }
+
+
+    // --- Static Parsing Logic ---
+    // Define patterns for expected message formats
+    private static final Pattern JOIN_PATTERN = Pattern.compile("^(\\w+) has joined the chat!?$");
+    private static final Pattern LEAVE_PATTERN = Pattern.compile("^(\\w+) has left the chat\\.?$");
+    private static final Pattern BROADCAST_PATTERN = Pattern.compile("^(\\w+):\\s*(.*)$");
+    private static final Pattern USER_LIST_PATTERN = Pattern.compile("^Connected users:\\s*(.*)$");
+
+
+    /**
+     * Parses a raw string message from the server into a ServerResponse object.
+     * This is where you adapt the logic to your server's specific output format.
+     */
+    public static ServerResponse parse(String rawMessage) {
+        if (rawMessage == null) {
+            return new ServerResponse(ResponseType.UNKNOWN, null, null, null, null);
+        }
+
+        Matcher matcher;
+
+        matcher = JOIN_PATTERN.matcher(rawMessage);
+        if (matcher.matches()) {
+            String user = matcher.group(1);
+            return new ServerResponse(ResponseType.JOIN_NOTIFICATION, user, null, null, rawMessage);
+        }
+
+        matcher = LEAVE_PATTERN.matcher(rawMessage);
+        if (matcher.matches()) {
+            String user = matcher.group(1);
+            return new ServerResponse(ResponseType.LEAVE_NOTIFICATION, user, null, null, rawMessage);
+        }
+
+        matcher = BROADCAST_PATTERN.matcher(rawMessage);
+        if (matcher.matches()) {
+            String sender = matcher.group(1);
+            String message = matcher.group(2);
+            return new ServerResponse(ResponseType.BROADCAST_MESSAGE, sender, message, null, rawMessage);
+        }
+
+        matcher = USER_LIST_PATTERN.matcher(rawMessage);
+        if (matcher.matches()) {
+            String userListStr = matcher.group(1);
+            List<String> users = Arrays.asList(userListStr.split(",\\s*")); // Split by comma and optional space
+            // Handle potential empty list if the string was just "Connected users: "
+            if (users.size() == 1 && users.get(0).isEmpty()) {
+                users = List.of(); // Represent as empty list
+            }
+            return new ServerResponse(ResponseType.USER_LIST, null, null, users, rawMessage);
+        }
+
+
+        // If none of the specific patterns match, treat as a generic server message or unknown
+        // You might refine this based on other expected server messages
+        System.err.println("WARN: Could not parse server message: " + rawMessage);
+        return new ServerResponse(ResponseType.UNKNOWN, null, rawMessage, null, rawMessage); // Or SERVER_MESSAGE?
+    }
+
+    @Override
+    public String toString() {
+        return "ServerResponse{" +
+                "type=" + type +
+                ", sender='" + sender + '\'' +
+                ", payload='" + payload + '\'' +
+                ", users=" + users +
+                ", raw='" + rawMessage.substring(0, Math.min(rawMessage.length(), 50)) + "...'" + // Avoid huge raw output
+                '}';
+    }
+
+    // Optional: Implement equals/hashCode if needed for comparisons
+}
+package chkNetwork.Server;
+
+import java.util.ArrayList;
+
+//Idk this is important...
+public interface ServerView {
+    void appendMessage(String message);
+    void showErrorMessage(String title, String message);
+    void setWindowTitle(String title);
+    void updateUserList(ArrayList<String> userlist);
+}
+package chkNetwork.Server;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+
+//This class takes the implements the functions required in the view...
+public class ServerWindow implements ServerView { // Implement the interface
+
+    private JFrame frame;
+    private JTextArea textArea;
+    private JList<String> activeUsers;
+
+    private final ServerLogic serverLogic; // Reference to the logic class
+
+    // Constructor takes the logic controller
+    public ServerWindow(ServerLogic serverLogic) {
+        this.serverLogic = serverLogic;
+
+        this.serverLogic.setView(this);
+
+        createAndShowGUI();
+    }
+
+    private void createAndShowGUI() {
+        // Use SwingUtilities.invokeLater to ensure GUI creation is on the EDT
+        SwingUtilities.invokeLater(() -> {
+            frame = new JFrame("Server Client Log"); // Initial title
+            textArea = new JTextArea();
+            textArea.setEditable(false);
+            textArea.setLineWrap(true);
+            JScrollPane scrollPane = new JScrollPane(textArea);
+
+
+
+            frame.setLayout(new BorderLayout());
+            frame.add(scrollPane, BorderLayout.CENTER);
+            JPanel bottomPanel = new JPanel();
+            bottomPanel.setLayout(new BorderLayout());
+            frame.add(bottomPanel, BorderLayout.SOUTH);
+
+            frame.setSize(400, 300);
+            // Change default close operation to notify logic
+            frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    serverLogic.stop();
+                    frame.dispose(); // Close the window
+                    System.exit(0); // Exit application if this is the main window
+                }
+            });
+
+
+            JPanel rightPanel = new JPanel();
+
+            this.activeUsers = new JList<>();
+
+            rightPanel.add(activeUsers);
+
+            frame.add(rightPanel, BorderLayout.EAST);
+
+
+
+            frame.setVisible(true);
+        });
+    }
+
+    // --- Implementation of ChatView Interface ---
+
+    //Push new message onto stack.
+    @Override
+    public void appendMessage(String message) {
+        System.out.println("Appending...... " + message);
+        // Ensure updates are on the EDT (already handled if called via SwingUtilities.invokeLater)
+        if (SwingUtilities.isEventDispatchThread()) {
+            textArea.append(message + "\n");
+            // Auto-scroll to bottom
+            textArea.setCaretPosition(textArea.getDocument().getLength());
+        } else {
+            SwingUtilities.invokeLater(() -> appendMessage(message));
+        }
+
+        System.out.println("Should have been updated?");
+    }
+
+    @Override
+    public void showErrorMessage(String title, String message) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            JOptionPane.showMessageDialog(frame, message, title, JOptionPane.ERROR_MESSAGE);
+        } else {
+            SwingUtilities.invokeLater(() -> showErrorMessage(title, message));
+        }
+    }
+
+    @Override
+    public void setWindowTitle(String title) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            frame.setTitle(title);
+        } else {
+            SwingUtilities.invokeLater(() -> setWindowTitle(title));
+        }
+    }
+
+    @Override
+    public void updateUserList(ArrayList<String> userlist) {
+
+        this.activeUsers.removeAll();
+
+        for(String user: userlist)
+        {
+            this.activeUsers.add(new JButton(user));
+        }
+
+    }
+}
