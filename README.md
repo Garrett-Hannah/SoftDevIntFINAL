@@ -4,7 +4,8 @@ Project Information:
 Entry Points:
 
 **SERVER**
-Run the serverRunnerEntryPoint file in chkNetwork. (this should be moved out)
+Run the 'StartServer' java file in src/main/java.
+
 
 **CLIENT**
-Run the ChatWindow (simple) or the boardWindow (opens a debug board)
+Run the 'StartClient' java file in src/main/java
