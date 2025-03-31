@@ -1,7 +1,6 @@
-package chGameUtil;
+package chkGameUtil;
 
-import chModel.Checkers.BoardModel;
-import chModel.Checkers.Position;
+import chkMVC.chModel.Checkers.BoardModel;
 
 public class BoardHelperSingleton {
     private static BoardHelperSingleton instance;
@@ -56,7 +55,7 @@ public class BoardHelperSingleton {
     }
 }
 
-package chGameUtil;
+package chkGameUtil;
 
 public class IncrementerSingleton {
     private static IncrementerSingleton instance;
@@ -83,104 +82,17 @@ public class IncrementerSingleton {
         return i;
     }
 }
-package chModel.Checkers;
+package chkMVC;
 
-import chModel.Checkers.Pieces.AbstractPiece;
-
-import java.util.HashMap;
-
-public class BoardModel {
-
-    HashMap<Position, AbstractPiece> boardSpace;
-
-    int size;
-
-    public BoardModel(int size)
-    {
-        this.size = size;
-
-        boardSpace = new HashMap<>();
-    }
-
-    public int getWidth(){
-        return this.size;
-    }
-
-    public int getHeight()
-    {
-        return this.size;
-    }
-
-    public int getNumberOfPieces()
-    {
-        return boardSpace.size();
-    }
-
-    public void addPiece(AbstractPiece piece)
-    {
-        if(!isOccupied(piece.getPosition()))
-            boardSpace.put(piece.getPosition(), piece);
-        else throw new IllegalArgumentException("Invalid Addition Spot. Piece Already Exists @" + boardSpace.get(piece.getPosition()).getPosition().toString());
-    }
-
-    public boolean isOccupied(Position position)
-    {
-        return boardSpace.get(position) != null;
-    }
-
-    @Override
-    public String toString() {
-        return "Board{" +
-                "boardSpace=" + boardSpace +
-                ", size=" + size +
-                '}';
-    }
-
-    //Using for debugging...
-    public void printBoard() {
-        char[] columns = "abcdefgh".toCharArray(); // Column labels
-
-        // Print column headers
-        System.out.print("  ");
-        for (char c : columns) {
-            System.out.print(c + " ");
-        }
-        System.out.println();
-
-        // Print rows
-        for (int i = size; i > 0; i--) { // Start from the top row (8 down to 1)
-            System.out.print(i + " "); // Row label
-
-            for (int j = 1; j <= size; j++) { // Columns (1 to 8)
-                AbstractPiece piece = boardSpace.get(new Position(i, j));
-
-                if (piece != null) {
-                    System.out.print((piece.getTeam() == AbstractPiece.PEICE_TEAM.WHITE) ? "W" : "B" + " "); // Print piece ID
-                } else {
-                    // Alternate between `#` and `.` for checkerboard pattern
-                    if ((i + j) % 2 == 0) System.out.print("# ");
-                    else System.out.print(". ");
-                }
-            }
-
-            System.out.println(); // New line after each row
-        }
-    }
-
-
-    public void clearBoard()
-    {
-        boardSpace = new HashMap<Position, AbstractPiece>();
-    }
-
-
+public class CheckersBoard {
 }
-package chModel.Checkers;
+package chkMVC.chController;
 
-import chModel.Checkers.Pieces.AbstractPiece;
+import chkMVC.chModel.Checkers.Pieces.AbstractPiece;
+import chkMVC.chModel.Checkers.Position;
 
 //I dont think that users should be able to
-public interface BoardView {
+public interface BoardController {
 
     void MovePiece(AbstractPiece piece, Position newPosition); //Function that takes a piece and set new position.
     //Function to get the piece at a position.
@@ -188,212 +100,349 @@ public interface BoardView {
     //Return the other thing i guess.............
     boolean isPositionOccupied(Position position);
 }
-package chModel.Checkers;
+package chkMVC.chModel.Checkers;
 
-import chModel.Checkers.Pieces.AbstractPiece;
-import chNetwork.Client.ClientLogic;
+import chkMVC.chModel.Checkers.Pieces.AbstractPiece;
+import chkMVC.chModel.Checkers.Position;
+import chkMVC.chModel.Math.Vector2i;
 
-import javax.swing.*;
-import java.awt.*;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map; // Use interface type
+import java.util.Optional; // Better way to handle potentially null pieces
 
-public class BoardWindow implements BoardView{
+public class BoardModel {
 
+    private final Map<Position, AbstractPiece> boardSpace; // Use Map interface
+    private final int width;
+    private final int height;
 
-
-    private ClientLogic clientLogic;
-
-    public JFrame frame;
-    private JButton announmentButton;
-
-    ArrayList<JButton> boardButtons;
-
-
-    BoardWindow(ClientLogic clientLogic)
-    {
-        this.clientLogic = clientLogic;
-
-        setupUI();
-        addListener();
-
-        frame.setVisible(true);
+    public BoardModel(int size) {
+        this(size, size); // Square board constructor
     }
 
-    JPanel buildBoardGrid(int boardSize)
-    {
-        JPanel gridPanel = new JPanel();
-
-        gridPanel.setLayout(new GridLayout(boardSize, boardSize));
-
-        for(int i = 0; i < boardSize * boardSize; i++)
-        {
-            JButton tempButton = new JButton(String.valueOf(i));
-
-            gridPanel.add(tempButton);
-
-
-            int finalI = i + 1;
-            tempButton.addActionListener(e -> {
-                clientLogic.sendMessage(String.valueOf(finalI));
-            });
+    public BoardModel(int width, int height) {
+        if (width <= 0 || height <= 0) {
+            throw new IllegalArgumentException("Board dimensions must be positive.");
         }
-
-        return gridPanel;
-
+        this.width = width;
+        this.height = height;
+        this.boardSpace = new HashMap<>();
+        // TODO: Add initial piece setup logic here if needed
     }
 
-    void setupUI()
-    {
-        frame = new JFrame("Checkers board");
-        frame.setSize(new Dimension(400, 400));
-
-        announmentButton = new JButton("Button");
-        announmentButton.setPreferredSize(new Dimension(65, 50));
-
-        //windowFrame.add(announmentButton);
-
-        frame.add(buildBoardGrid(8));
-
+    public int getWidth() {
+        return this.width;
     }
 
-    void addListener()
-    {
-        announmentButton.addActionListener(e -> {
-            System.out.println("gui: button pressed.");
-
-            clientLogic.sendMessage("announcing new stuff...");
-
-        });
+    public int getHeight() {
+        return this.height;
     }
 
-
-    @Override
-    public void MovePiece(AbstractPiece piece, Position newPosition) {
-
+    public int getNumberOfPieces() {
+        return boardSpace.size();
     }
 
-    @Override
+    // Get piece using Optional to avoid null checks elsewhere
+    public Optional<AbstractPiece> getPieceOptional(Position position) {
+        // Validate position belongs to this board conceptually
+        if (position.getBoardWidth() != this.width || position.getBoardHeight() != this.height) {
+            // Or log a warning, depending on desired strictness
+            throw new IllegalArgumentException("Position " + position + " dimensions do not match board dimensions (" + width + "x" + height + ")");
+        }
+        return Optional.ofNullable(boardSpace.get(position));
+    }
+
+    // Get piece, returning null (less safe, but sometimes needed)
     public AbstractPiece getPieceAt(Position position) {
-        return null;
+        if (position.getBoardWidth() != this.width || position.getBoardHeight() != this.height) {
+            throw new IllegalArgumentException("Position dimensions mismatch");
+        }
+        return boardSpace.get(position);
     }
+
+
+    public boolean isOccupied(Position position) {
+        if (position.getBoardWidth() != this.width || position.getBoardHeight() != this.height) {
+            throw new IllegalArgumentException("Position dimensions mismatch");
+        }
+        return boardSpace.containsKey(position);
+    }
+
+    // Internal method to place a piece - used during setup or potentially moves
+    // Consider making this package-private or protected if only specific classes should use it
+    public void placePiece(AbstractPiece piece) {
+        Position pos = piece.getPosition();
+        if (pos.getBoardWidth() != this.width || pos.getBoardHeight() != this.height) {
+            throw new IllegalArgumentException("Piece position dimensions mismatch");
+        }
+        if (isOccupied(pos)) {
+            throw new IllegalStateException("Cannot place piece at " + pos + ", already occupied by " + boardSpace.get(pos));
+        }
+        boardSpace.put(pos, piece);
+    }
+
+    // Removes a piece - returns true if a piece was removed
+    public boolean removePiece(Position position) {
+        if (position.getBoardWidth() != this.width || position.getBoardHeight() != this.height) {
+            throw new IllegalArgumentException("Position dimensions mismatch");
+        }
+        return boardSpace.remove(position) != null;
+    }
+
+    // Moves a piece - handles removal and placement, checks if 'from' is occupied
+    public void movePiece(Position from, Position to) {
+        if (from.equals(to)) {
+            throw new IllegalArgumentException("Cannot move piece to the same position: " + from);
+        }
+        AbstractPiece piece = getPieceAt(from);
+        if (piece == null) {
+            throw new IllegalStateException("No piece found at starting position: " + from);
+        }
+        if (isOccupied(to)) {
+            throw new IllegalStateException("Cannot move to occupied position: " + to);
+        }
+
+        // Remove from old, place at new, update piece's internal state
+        boardSpace.remove(from);
+        boardSpace.put(to, piece);
+        piece.setPositionInternal(to); // Update the piece's internal position
+    }
+
 
     @Override
-    public boolean isPositionOccupied(Position position) {
-        return false;
+    public String toString() {
+        // Basic toString, printBoard is better for visualization
+        return "BoardModel{" +
+                "width=" + width +
+                ", height=" + height +
+                ", pieces=" + boardSpace.size() +
+                '}';
     }
 
-
-    public static void main(String[] args) {
-
-        ClientLogic clientLogic1 = new ClientLogic("localhost", 5000);
-
-        BoardWindow boardWindow = new BoardWindow(clientLogic1);
-
-        boolean connected = clientLogic1.connect("boardTest");
-
-        if (!connected) {
-            // Handle connection failure - maybe close the initial window
-            System.err.println("Initial connection failed. Exiting.");
-            // Ensure GUI resources are cleaned up if connection fails immediately
-            SwingUtilities.invokeLater(() -> {
-                if (boardWindow.frame != null) {
-                    boardWindow.frame.dispose();
-                }
-            });
-            System.exit(1); // Exit with error status
+    // Using for debugging... (Keep this for testing/console use)
+    public void printBoard() {
+        System.out.println("Board State (" + width + "x" + height + "):");
+        // Assuming (1,1) is top-left for printing
+        // Column Headers (A, B, C...)
+        System.out.print("  ");
+        for (int j = 0; j < width; j++) {
+            System.out.print(" " + (char)('A' + j));
         }
+        System.out.println();
+        System.out.print("  ");
+        for (int j = 0; j < width; j++) {
+            System.out.print("--");
+        }
+        System.out.println("-");
+
+
+        for (int i = 1; i <= height; i++) { // Rows 1 to height
+            System.out.printf("%d|", i); // Row label
+
+            for (int j = 1; j <= width; j++) { // Columns 1 to width
+                try {
+                    Position currentPos = new Position(j, i, width, height);
+                    Optional<AbstractPiece> pieceOpt = getPieceOptional(currentPos);
+                    if (pieceOpt.isPresent()) {
+                        AbstractPiece piece = pieceOpt.get();
+                        System.out.print(" " + (piece.getTeam() == AbstractPiece.PEICE_TEAM.WHITE ? 'W' : 'B'));
+                    } else {
+                        // Checkerboard pattern (optional, can just print '.')
+                        // if ((i + j) % 2 == 0) System.out.print(" #"); // Dark square
+                        // else System.out.print(" .");                 // Light square
+                        System.out.print(" .");
+                    }
+                } catch(IllegalArgumentException e) {
+                    System.out.print(" X"); // Should not happen if loop is correct
+                }
+            }
+            System.out.println(" |"); // End of row
+        }
+        System.out.print("  ");
+        for (int j = 0; j < width; j++) {
+            System.out.print("--");
+        }
+        System.out.println("-");
     }
+
+    public void clearBoard() {
+        boardSpace.clear();
+    }
+
+    public Vector2i getSize() {
+        return new Vector2i(this.getWidth(), this.getHeight());
+    }
+
+    public Position createPosition(int x, int y)
+    {
+        //Create the position based from the baord.
+        return new Position(x, y, this.width, this.height);
+    }
+
+    /**
+     * Converts a 0-based linear integer index (e.g., from a flattened array or UI grid)
+     * to a 1-based (x, y) Position object for a board of given dimensions.
+     * Assumes row-major order (0 is top-left, width-1 is top-right).
+     *
+     * @param linearInt The 0-based linear index (0 to width*height - 1).
+     * @return The corresponding Position object.
+     * @throws IllegalArgumentException if linearInt is out of range [0, width*height - 1]
+     *         or if board dimensions are invalid.
+     */
+    public Position positionFromInt(int linearInt) {
+        int boardHeight = this.getHeight();
+        int boardWidth = this.getWidth();
+
+        if (boardHeight <= 0 || boardWidth <= 0) {
+            throw new IllegalArgumentException("Board dimensions must be positive.");
+        }
+
+        int maxIndex = boardWidth * boardHeight - 1;
+        if (linearInt < 0 || linearInt > maxIndex) {
+            throw new IllegalArgumentException(String.format(
+                    "Linear index %d is out of range [0, %d] for a %dx%d board.",
+                    linearInt, maxIndex, boardWidth, boardHeight));
+        }
+
+        // Calculate 0-based row and column
+        int zeroBasedRow = linearInt / boardWidth;  // Row (0 to height-1)
+        int zeroBasedCol = linearInt % boardWidth;  // Column (0 to width-1)
+
+        // Convert to 1-based coordinates
+        int xValue = zeroBasedCol + 1;
+        int yValue = boardHeight - zeroBasedRow;  // If board is inverted (A1 at bottom)
+
+        // Create position with board validation
+        return new Position(xValue, yValue, boardWidth, boardHeight);
+    }
+
+
+    // Creates a deep copy for passing state around immutably if needed
+    // Note: This requires AbstractPiece subclasses to have copy constructors or similar
+    /*
+    public BoardModel copy() {
+        BoardModel newBoard = new BoardModel(this.width, this.height);
+        for (Map.Entry<Position, AbstractPiece> entry : this.boardSpace.entrySet()) {
+             // Assuming AbstractPiece has a copy() method or copy constructor
+             // newBoard.placePiece(entry.getValue().copy());
+        }
+        return newBoard;
+    }
+    */
 }
-package chModel.Checkers;
+package chkMVC.chModel.Checkers;
 
-import chGameUtil.BoardHelperSingleton;
-import chModel.Math.Vector2i;
-
-
-import static java.util.Objects.hash;
+import chkMVC.chModel.Math.Vector2i;
+import java.util.Objects; // Use Objects.hash
 
 public class Position {
-    private Vector2i position;
+    private final Vector2i position; // Made final
+    private final int boardWidth;    // Made final
+    private final int boardHeight;   // Made final
 
-
-    public Position(int x, int y) {
-        position = new Vector2i(x, y);
-        this.setX(x);
-        this.setY(y);
-    }
-
-    public Position(Vector2i position)
-    {
-        this(position.x, position.y);
-    }
-
-    public void setX(int x) {
-        if (!isValueValidBoardSpot(x)) {
-            throw new IllegalArgumentException("Invalid x position: " + x + ". Must be between 1 and " + getBoardHeight());
+    /**
+     * Creates a new Position.
+     * @param x The x-coordinate (column), 1-based.
+     * @param y The y-coordinate (row), 1-based.
+     * @param boardWidth The width of the board this position belongs to.
+     * @param boardHeight The height of the board this position belongs to.
+     * @throws IllegalArgumentException if x or y are out of board bounds [1, width/height].
+     */
+    public Position(int x, int y, int boardWidth, int boardHeight) {
+        if (boardWidth <= 0 || boardHeight <= 0) {
+            throw new IllegalArgumentException("Board dimensions must be positive.");
         }
-        this.position.x = x;
-    }
+        this.boardWidth = boardWidth;
+        this.boardHeight = boardHeight;
 
-    public void setY(int y) {
-        if (!isValueValidBoardSpot(y)) {
-            throw new IllegalArgumentException("Invalid y position: " + y + ". Must be between 1 and " + getBoardHeight());
+        // Validate coordinates against the provided bounds immediately
+        if (!isValidCoordinate(x, this.boardWidth)) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid x position: %d. Must be between 1 and %d.", x, this.boardWidth));
         }
-        this.position.y = y;
-    }
-
-    private boolean isValueValidBoardSpot(int value) {
-        return value >= 1 && value <= getBoardHeight();
-    }
-
-    private int getBoardHeight() {
-        try {
-            return BoardHelperSingleton.getInstance().getBoardHeight();
-        } catch (IllegalStateException e) {
-            System.err.println("Warning: Game instance not initialized. Using default board height of 8.");
-            return 8; // Default size, adjust as needed
+        if (!isValidCoordinate(y, this.boardHeight)) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid y position: %d. Must be between 1 and %d.", y, this.boardHeight));
         }
+
+        this.position = new Vector2i(x, y);
+    }
+
+    /**
+     * Creates a new Position using Vector2i for coordinates and dimensions.
+     * @param positionVector Vector containing 1-based x and y coordinates.
+     * @param boardSizeVector Vector containing board width and height.
+     * @throws IllegalArgumentException if coordinates are out of bounds.
+     */
+    public Position(Vector2i positionVector, Vector2i boardSizeVector) {
+        this(positionVector.x, positionVector.y, boardSizeVector.x, boardSizeVector.y);
+    }
+
+    // Private helper for coordinate validation
+    private boolean isValidCoordinate(int value, int maxValue) {
+        return value >= 1 && value <= maxValue;
+    }
+
+    // No setters needed as fields are final, promoting immutability
+
+    public int getBoardWidth() {
+        return this.boardWidth;
+    }
+
+    public int getBoardHeight() {
+        return this.boardHeight;
     }
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        Position position = (Position) obj;
-        return this.getX() == position.getX() && this.getY() == position.getY();
+        Position other = (Position) obj;
+        // Positions are equal if coordinates are the same.
+        // Board dimensions don't strictly need to match for equality,
+        // but logically they should represent the same conceptual square.
+        return this.getX() == other.getX() && this.getY() == other.getY();
+        // Optional stricter check: && this.boardWidth == other.boardWidth && this.boardHeight == other.boardHeight;
     }
 
     @Override
     public int hashCode() {
-        return hash(this.getX(), this.getY());
+        // Hash code depends only on coordinates for map lookups.
+        return Objects.hash(this.getX(), this.getY());
+        // Optional stricter hash: return Objects.hash(this.getX(), this.getY(), this.boardWidth, this.boardHeight);
     }
 
     @Override
     public String toString() {
-        // Convert x to letters A-H
-        char column = (char) ('@' + this.getX());  // Convert the column index to a letter (A-H)
-
-        // Convert y to numbers 1-8
+        // Convert x to letters (A, B, ...)
+        char column = (char) ('A' + this.getX() - 1); // Adjust for 1-based index
+        // Row is just the Y value
         int row = this.getY();
-        // Return the position as "A1", "B2", ..., "H8"
-        return column + Integer.toString(row);
+        // Return standard algebraic notation e.g., "A1", "H8"
+        return String.format("%c%d", column, row);
     }
 
     /**
-     *
-     * @param dx
-     * @param dy
-     * @return The Value of the new directions added to the thing.
+     * Calculates a new Position relative to this one.
+     * @param dx Change in x-coordinate.
+     * @param dy Change in y-coordinate.
+     * @return The new Position.
+     * @throws IllegalArgumentException if the resulting coordinates are off the board.
      */
-    public Position getDeltaPosition(int dx, int dy)
-    {
-        int x = this.getX();
-        int y = this.getY();
-
-        return new Position(x + dx, y + dy);
+    public Position getDeltaPosition(int dx, int dy) {
+        int newX = this.getX() + dx;
+        int newY = this.getY() + dy;
+        // The constructor will validate the new coordinates against the board dimensions
+        return new Position(newX, newY, this.boardWidth, this.boardHeight);
     }
 
-    public Position getDeltaPosition(Vector2i dv)
-    {
+    /**
+     * Calculates a new Position relative to this one using a Vector2i delta.
+     * @param dv Vector representing the change in x and y.
+     * @return The new Position.
+     * @throws IllegalArgumentException if the resulting coordinates are off the board.
+     */
+    public Position getDeltaPosition(Vector2i dv) {
         return getDeltaPosition(dv.x, dv.y);
     }
 
@@ -404,36 +453,17 @@ public class Position {
     public int getX() {
         return this.position.x;
     }
-
-    //Map the position from a linear value to the coordinate value. pretty much only used because.
-
-    /**
-     * Expects The value to be 0 indexed.
-     * @param linearInt
-     * @return
-     */
-    public static Position positionFromInt(int linearInt) {
-
-        int xValue = linearInt % BoardHelperSingleton.getInstance().getBoardHeight();
-        int yValue = linearInt / BoardHelperSingleton.getInstance().getBoardHeight();
-
-        yValue += 1;
-        xValue += 1;
-
-        Position p1 = new Position(xValue, yValue);
-
-        return p1;
-    }
 }
-package chModel.Checkers.Pieces;
+package chkMVC.chModel.Checkers.Pieces;
 
-import chGameUtil.BoardHelperSingleton;
-import chGameUtil.IncrementerSingleton;
-import chModel.Checkers.BoardModel;
-import chModel.Checkers.Position;
-import chModel.Math.Vector2i;
+import chkGameUtil.BoardHelperSingleton;
+import chkGameUtil.IncrementerSingleton;
+import chkMVC.chModel.Checkers.BoardModel;
+import chkMVC.chModel.Checkers.Position;
+import chkMVC.chModel.Math.Vector2i;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractPiece {
 
@@ -489,7 +519,7 @@ public abstract class AbstractPiece {
 
         Position newPosition = position.getDeltaPosition(delta);
 
-        if (!isValidMove(newPosition)) {  // Assuming
+        if (!isValidMove( newPosition)) {  // Assuming
             throw new IllegalArgumentException("Invalid move: " + delta);
         }
 
@@ -499,6 +529,14 @@ public abstract class AbstractPiece {
 
     public PEICE_TEAM getTeam() {
         return this.team;
+    }
+
+    public abstract List<Position> getValidSimpleMoves(BoardModel board);
+
+    public abstract List<Position> getValidJumpMoves(BoardModel board);
+
+    public void setPositionInternal(Position to) {
+        this.position = to;
     }
 
     //Provides info on the cardinal direction of the piece....
@@ -525,28 +563,91 @@ public abstract class AbstractPiece {
         }
     }
 
-
-    public boolean isValidMove(Position position)
+    public int getDirection()
     {
-        BoardModel gameBoardModel = BoardHelperSingleton.getInstance().getBoard();
+        return this.team.value;
+    }
 
-        return !gameBoardModel.isOccupied(position);
+
+    public boolean isValidMove(BoardModel model, Position position)
+    {
+        return !model.isOccupied(position);
     }
 }
 
 
-package chModel.Checkers.Pieces;
+package chkMVC.chModel.Checkers.Pieces;
 
-import chModel.Checkers.Position;
+import chkMVC.chModel.Checkers.BoardModel;
+import chkMVC.chModel.Checkers.Position;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SerfPiece extends AbstractPiece {
-
 
     public SerfPiece(Position position, PEICE_TEAM team) {
         super(position, team);
     }
+
+    @Override
+    public List<Position> getValidSimpleMoves(BoardModel board) {
+        List<Position> validMoves = new ArrayList<>();
+        Position current = getPosition();
+        int forwardY = getDirection(); // Get the Y direction based on team
+
+        // Check forward-left
+        try {
+            Position potentialPos = current.getDeltaPosition(-1, forwardY);
+            if (!board.isOccupied(potentialPos)) {
+                validMoves.add(potentialPos);
+            }
+        } catch (IllegalArgumentException e) { /* Off board */ }
+
+        // Check forward-right
+        try {
+            Position potentialPos = current.getDeltaPosition(1, forwardY);
+            if (!board.isOccupied(potentialPos)) {
+                validMoves.add(potentialPos);
+            }
+        } catch (IllegalArgumentException e) { /* Off board */ }
+
+        return validMoves;
+    }
+
+    @Override
+    public List<Position> getValidJumpMoves(BoardModel board) {
+        List<Position> jumpMoves = new ArrayList<>();
+        Position current = getPosition();
+        int forwardY = getDirection(); // Y direction for moving forward
+
+        // Check jump forward-left
+        try {
+            Position jumpOverPos = current.getDeltaPosition(-1, forwardY);
+            Position landingPos = current.getDeltaPosition(-2, forwardY * 2); // Jump lands 2 steps away
+            AbstractPiece pieceToJump = board.getPieceAt(jumpOverPos);
+            // Must jump over an OPPONENT piece onto an EMPTY square
+            if (pieceToJump != null && pieceToJump.getTeam() != this.getTeam() && !board.isOccupied(landingPos)) {
+                jumpMoves.add(landingPos);
+            }
+        } catch (IllegalArgumentException e) { /* Off board */ }
+
+        // Check jump forward-right
+        try {
+            Position jumpOverPos = current.getDeltaPosition(1, forwardY);
+            Position landingPos = current.getDeltaPosition(2, forwardY * 2);
+            AbstractPiece pieceToJump = board.getPieceAt(jumpOverPos);
+            if (pieceToJump != null && pieceToJump.getTeam() != this.getTeam() && !board.isOccupied(landingPos)) {
+                jumpMoves.add(landingPos);
+            }
+        } catch (IllegalArgumentException e) { /* Off board */ }
+
+        // TODO: Add multi-jump logic if required (often handled in the Controller/Game Logic)
+
+        return jumpMoves;
+    }
 }
-package chModel.Math;
+package chkMVC.chModel.Math;
 
 public class Vector2i {
     public int x, y;
@@ -577,7 +678,115 @@ public class Vector2i {
         return "(" + x + ", " + y + ")";
     }
 }
-package chNetwork;
+package chkMVC.chView;
+
+import chkMVC.chController.BoardController;
+import chkMVC.chModel.Checkers.BoardModel;
+import chkMVC.chModel.Checkers.Pieces.AbstractPiece;
+import chkMVC.chModel.Checkers.Position;
+import chkNetwork.Client.ClientLogic;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+
+public class BoardView {
+
+
+
+    private ClientLogic clientLogic;
+
+    public JFrame frame;
+    private JButton announmentButton;
+    private BoardModel boardModel;
+
+    BoardController controller;
+
+    ArrayList<JButton> boardButtons;
+
+
+    BoardView(ClientLogic clientLogic, BoardModel boardModel)
+    {
+        this.clientLogic = clientLogic;
+        this.boardModel = boardModel;
+        setupUI();
+        addListener();
+
+        frame.setVisible(true);
+    }
+
+    JPanel buildBoardGrid(int boardSize)
+    {
+        JPanel gridPanel = new JPanel();
+
+        gridPanel.setLayout(new GridLayout(boardSize, boardSize));
+
+        for(int i = 0; i < boardSize * boardSize; i++)
+        {
+            JButton tempButton = new JButton(String.valueOf(i));
+
+            gridPanel.add(tempButton);
+
+
+            int finalI = i + 1;
+            tempButton.addActionListener(e -> {
+                clientLogic.sendMessage(String.valueOf(finalI));
+            });
+        }
+
+        return gridPanel;
+
+    }
+
+    void setupUI()
+    {
+        frame = new JFrame("Checkers board");
+        frame.setSize(new Dimension(400, 400));
+
+        announmentButton = new JButton("Button");
+        announmentButton.setPreferredSize(new Dimension(65, 50));
+
+        //windowFrame.add(announmentButton);
+
+        frame.add(buildBoardGrid(boardModel.getHeight()));
+
+    }
+
+    void addListener()
+    {
+        announmentButton.addActionListener(e -> {
+            System.out.println("gui: button pressed.");
+
+            clientLogic.sendMessage("announcing new stuff...");
+
+        });
+    }
+
+
+    public static void main(String[] args) {
+
+        ClientLogic clientLogic1 = new ClientLogic("localhost", 5000);
+
+        BoardModel boardModel = new BoardModel(8);
+
+        BoardView boardWindow = new BoardView(clientLogic1, boardModel);
+
+        boolean connected = clientLogic1.connect("boardTest");
+
+        if (!connected) {
+            // Handle connection failure - maybe close the initial window
+            System.err.println("Initial connection failed. Exiting.");
+            // Ensure GUI resources are cleaned up if connection fails immediately
+            SwingUtilities.invokeLater(() -> {
+                if (boardWindow.frame != null) {
+                    boardWindow.frame.dispose();
+                }
+            });
+            System.exit(1); // Exit with error status
+        }
+    }
+}
+package chkNetwork;
 
 public enum CLIENT_REQUEST_CODES {
 
@@ -608,9 +817,9 @@ public enum CLIENT_REQUEST_CODES {
         return code;
     }
 }
-package chNetwork;
+package chkNetwork;
 
-import chNetwork.Server.ServerLogic;
+import chkNetwork.Server.ServerLogic;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -638,7 +847,7 @@ public class ServerRunnerEntrypoint {
         }
     }
 }
-package chNetwork;
+package chkNetwork;
 
 public enum SERVER_RESPONSE_CODES {
 
@@ -681,7 +890,7 @@ public enum SERVER_RESPONSE_CODES {
         return code;
     }
 }
-package chNetwork.Client;
+package chkNetwork.Client;
 
 // Class for things required
 public interface ChatView {
@@ -691,7 +900,7 @@ public interface ChatView {
     void setWindowTitle(String title);
     void closeWindow();
 }
-package chNetwork.Client;
+package chkNetwork.Client;
 
 import javax.swing.*;
 import java.awt.*;
@@ -866,9 +1075,9 @@ public class ChatWindow implements ChatView { // Implement the interface
         System.out.println("Application setup complete. GUI visible. Listening for messages.");
     }
 }
-package chNetwork.Client;
+package chkNetwork.Client;
 
-import chNetwork.CLIENT_REQUEST_CODES;
+import chkNetwork.CLIENT_REQUEST_CODES;
 
 import java.io.*;
 import java.net.*;
@@ -1059,7 +1268,7 @@ public class ClientLogic {
         }
     }
 }
-package chNetwork.Client;
+package chkNetwork.Client;
 
 /***
  * This Class is like super duper important for server things (not really)...
@@ -1079,7 +1288,7 @@ public class clientRequest {
 
 
 }
-package chNetwork.Server;
+package chkNetwork.Server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -1210,11 +1419,8 @@ class ClientHandler implements Runnable { // Implement Runnable
     }
 }
 
-package chNetwork.Server;
+package chkNetwork.Server;
 
-import chNetwork.Client.ChatView;
-
-import javax.swing.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -1504,7 +1710,7 @@ public class ServerLogic implements Runnable { // Implement Runnable for the mai
     }
 
 }
-package chNetwork.Server;
+package chkNetwork.Server;
 
 import java.util.Arrays;
 import java.util.List;
@@ -1615,7 +1821,7 @@ class ServerResponse {
 
     // Optional: Implement equals/hashCode if needed for comparisons
 }
-package chNetwork.Server;
+package chkNetwork.Server;
 
 import java.util.ArrayList;
 
@@ -1626,7 +1832,7 @@ public interface ServerView {
     void setWindowTitle(String title);
     void updateUserList(ArrayList<String> userlist);
 }
-package chNetwork.Server;
+package chkNetwork.Server;
 
 import javax.swing.*;
 import java.awt.*;
@@ -1654,7 +1860,7 @@ public class ServerWindow implements ServerView { // Implement the interface
     private void createAndShowGUI() {
         // Use SwingUtilities.invokeLater to ensure GUI creation is on the EDT
         SwingUtilities.invokeLater(() -> {
-            frame = new JFrame("Chat Client"); // Initial title
+            frame = new JFrame("Server Client Log"); // Initial title
             textArea = new JTextArea();
             textArea.setEditable(false);
             textArea.setLineWrap(true);
@@ -1743,250 +1949,273 @@ public class ServerWindow implements ServerView { // Implement the interface
 
     }
 }
-package chView;
-
-public class CheckersBoard {
-}
-package chController;
-
-public class CheckerBoard {
-}
 package ModelTest;
 
-import chGameUtil.BoardHelperSingleton;
-import chModel.Checkers.BoardModel;
-import chModel.Checkers.Pieces.AbstractPiece;
-import chModel.Checkers.Position;
-import chModel.Checkers.Pieces.SerfPiece;
+import chkGameUtil.BoardHelperSingleton;
+import chkMVC.chModel.Checkers.BoardModel;
+import chkMVC.chModel.Checkers.Pieces.AbstractPiece;
+import chkMVC.chModel.Checkers.Position;
+import chkMVC.chModel.Checkers.Pieces.SerfPiece;
+import chkMVC.chModel.Math.Vector2i;
 import org.junit.jupiter.api.*;
 
-import java.util.ArrayList;
+import java.util.List; // Use List instead of ArrayList for return type consistency
 
+import static org.junit.jupiter.api.Assertions.*; // Use static imports for brevity
 
 public class BoardModelTest {
 
-    private static final boolean Verbose = false;
+    private static BoardModel gameBoardModel; // Hold the board model instance
 
     @BeforeAll
-    static void initBoard()
-    {
+    static void initBoard() {
         BoardHelperSingleton.initialize(8);
+        gameBoardModel = BoardHelperSingleton.getInstance().getBoard(); // Get the board instance
+        System.out.println("Board Initialized for Tests.");
     }
-
-    @Test
-    void testBoardInitProper()
-    {
-        Assertions.assertEquals(8, BoardHelperSingleton.getInstance().getBoardHeight(), "Game did not initialize to the expected size.");
-    }
-
 
     @AfterEach
-    void postTest()
-    {
-
-        BoardHelperSingleton.getInstance().getBoard().clearBoard();
+    void clearBoardAfterTest() {
+        gameBoardModel.clearBoard(); // Clear board after each test
+        assertEquals(0, gameBoardModel.getNumberOfPieces(), "Board should be empty after clearing.");
+        System.out.println("--- Test Finished, Board Cleared ---");
     }
 
     @Test
-    void placePiece() {
-
-        System.out.println("Function Test::" + new Object(){}.getClass().getEnclosingMethod().getName());
-
-        BoardModel gameBoardModel = BoardHelperSingleton.getInstance().getBoard();
-
-        // Loop through all 8x8 positions on the board (assuming 8x8 grid)
-        for (int x = 0; x < 8; x++) {
-            for (int y = 0; y < 8; y++) {
-                // Create a new piece for each position
-                SerfPiece newPiece = new SerfPiece(new Position(x + 1, y + 1), AbstractPiece.PEICE_TEAM.WHITE);
-
-                // Add the piece to the board
-                gameBoardModel.addPiece(newPiece);
-
-                // Assert that the piece was added
-                Assertions.assertEquals(
-                        (x * 8 + y + 1), // The number of pieces should match the current piece count
-                        gameBoardModel.getNumberOfPieces(),
-                        "Error: Number of pieces on board not incremented correctly at position (" + x + ", " + y + ")."
-                );
-            }
-        }
-
-        gameBoardModel.printBoard();
-
-
-        System.out.println("Test Passed.");
-
-        gameBoardModel.clearBoard();
+    void testBoardInitProper() {
+        System.out.println("Testing Board Initialization...");
+        assertNotNull(gameBoardModel, "BoardModel instance should not be null.");
+        assertEquals(8, BoardHelperSingleton.getInstance().getBoardHeight(), "Game board height did not initialize to the expected size.");
+        assertEquals(8, BoardHelperSingleton.getInstance().getBoardWidth(), "Game board width did not initialize to the expected size.");
+        assertEquals(0, gameBoardModel.getNumberOfPieces(), "Newly initialized board should have 0 pieces.");
+        System.out.println("Board Initialization Test Passed.");
     }
+
+    @Test
+    void testPlaceAndGetPiece() {
+        System.out.println("Testing Piece Placement and Retrieval...");
+        Position pos = gameBoardModel.createPosition(3, 3);
+        SerfPiece piece = new SerfPiece(pos, AbstractPiece.PEICE_TEAM.WHITE);
+
+        // Place the piece
+        assertDoesNotThrow(() -> gameBoardModel.placePiece(piece), "Placing a piece on an empty square should not throw.");
+        assertEquals(1, gameBoardModel.getNumberOfPieces(), "Board should have 1 piece after placement.");
+        assertTrue(gameBoardModel.isOccupied(pos), "Position should be occupied after placement.");
+
+        // Retrieve the piece
+        AbstractPiece retrievedPiece = gameBoardModel.getPieceAt(pos);
+        assertNotNull(retrievedPiece, "Should be able to retrieve the placed piece.");
+        assertSame(piece, retrievedPiece, "Retrieved piece should be the same instance as the placed piece.");
+        assertEquals(piece.getId(), retrievedPiece.getId(), "Retrieved piece ID should match.");
+        assertEquals(pos, retrievedPiece.getPosition(), "Retrieved piece position should match.");
+
+        System.out.println("Piece Placement and Retrieval Test Passed.");
+        gameBoardModel.printBoard(); // Optional: print board state
+    }
+
 
     @Test
     void testAddPieceToOccupiedSpot() {
-        System.out.println("Function Test::" + new Object(){}.getClass().getEnclosingMethod().getName());
+        Vector2i boardSize = gameBoardModel.getSize();
+        System.out.println("Testing Adding Piece to Occupied Spot...");
+        Position position = gameBoardModel.createPosition(3, 3);
 
-
-        BoardModel gameBoardModel = BoardHelperSingleton.getInstance().getBoard();
-
-        // Create a position for testing
-        Position position = new Position(3, 3);
-
-        // Create and add the first piece to the board
+        // Place the first piece
         SerfPiece piece1 = new SerfPiece(position, AbstractPiece.PEICE_TEAM.WHITE);
-        gameBoardModel.addPiece(piece1);
+        gameBoardModel.placePiece(piece1);
+        assertTrue(gameBoardModel.isOccupied(position), "The spot should be occupied after adding the first piece.");
+        assertEquals(1, gameBoardModel.getNumberOfPieces(), "Should be 1 piece on board.");
 
-        // Check that the position is occupied
-        Assertions.assertTrue(gameBoardModel.isOccupied(position), "The spot should be occupied after adding the first piece.");
+        // Try to place a second piece at the same spot
+        SerfPiece piece2 = new SerfPiece(position, AbstractPiece.PEICE_TEAM.BLACK); // Different team, still invalid
 
-        // Try to add a piece to the same position and check that an exception is thrown
-        SerfPiece piece2 = new SerfPiece(position, AbstractPiece.PEICE_TEAM.WHITE);
-        IllegalArgumentException thrown = Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> gameBoardModel.addPiece(piece2),
-                "Expected addPiece() to throw an exception when trying to add a piece to an occupied spot."
+        // Expect an IllegalStateException
+        IllegalStateException thrown = assertThrows(
+                IllegalStateException.class,
+                () -> gameBoardModel.placePiece(piece2), // Use placePiece, not addPiece
+                "Expected placePiece() to throw an IllegalStateException when adding to an occupied spot."
         );
 
-        Assertions.assertEquals("Invalid Addition Spot. Piece Already Exists @" + position, thrown.getMessage(), "Did not receive the expected result");
+        // Check the exception message (optional, but good practice)
+        // The message includes the piece occupying the spot, so we check the start
+        assertTrue(thrown.getMessage().startsWith("Cannot place piece at " + position),
+                "Exception message should indicate the occupied position. Got: " + thrown.getMessage());
 
+        assertEquals(1, gameBoardModel.getNumberOfPieces(), "Number of pieces should remain 1 after failed placement.");
 
-        System.out.println("Test Passed.");
-
-        gameBoardModel.clearBoard();
+        System.out.println("Adding to Occupied Spot Test Passed.");
+        gameBoardModel.printBoard(); // Optional: print board state
     }
 
-
     @Test
-    void testGettingValidPositions()
-    {
-        System.out.println("Function Test::" + new Object(){}.getClass().getEnclosingMethod().getName());
+    void testGettingValidSimpleMovesEmptyBoard() {
+        System.out.println("Testing Valid Simple Moves on Empty Board...");
 
-        BoardModel gameBoardModel = BoardHelperSingleton.getInstance().getBoard();
+        Position startPos = gameBoardModel.createPosition(3, 3); // C3
+        SerfPiece myPiece = new SerfPiece(startPos, AbstractPiece.PEICE_TEAM.WHITE);
+        gameBoardModel.placePiece(myPiece);
 
-        SerfPiece myPiece = new SerfPiece(new Position(3, 3), AbstractPiece.PEICE_TEAM.WHITE);
+        // White moves forward (Y increases)
+        Position expectedPos1 = gameBoardModel.createPosition(2, 4); // B4 (Forward-Left)
+        Position expectedPos2 = gameBoardModel.createPosition(4, 4); // D4 (Forward-Right)
 
-        gameBoardModel.addPiece(myPiece);
+        // Use getValidSimpleMoves
+        List<Position> validMoveSpots = myPiece.getValidSimpleMoves(gameBoardModel);
 
-        ArrayList<Position> validMoveSpots = myPiece.getValidPositions();
+        assertNotNull(validMoveSpots, "Valid moves list should not be null.");
+        assertEquals(2, validMoveSpots.size(), "White piece at C3 on empty board should have 2 simple moves.");
 
-        Assertions.assertEquals(new Position(4, 4), validMoveSpots.get(0), "Did Not equal expected value.");
-        Assertions.assertEquals(new Position(2, 4), validMoveSpots.get(1), "Did Not equal expected value.");
+        // Check if both expected positions are present (order might vary, so use contains)
+        assertTrue(validMoveSpots.contains(expectedPos1), "Valid moves should include B4.");
+        assertTrue(validMoveSpots.contains(expectedPos2), "Valid moves should include D4.");
 
-
-        System.out.println("Test Passed.");
-
+        System.out.println("Valid Simple Moves (Empty Board) Test Passed.");
         gameBoardModel.printBoard();
     }
 
 
-
-    /*
-    Board Setup:
-  a b c d e f g h
-8 # . # . # . # .
-7 . # . # . # . #
-6 # . # . # . # .
-5 . # . # O # . #
-4 # . # O # . # .
-3 . # . # . # . #
-2 # . # . # . # .
-1 . # . # . # . #
-     */
-    //Expected result: there is one valid movement position.
     @Test
-    void testGetValidPositionAgainstOtherPiece()
-    {
-        System.out.println("Function Test::" + new Object(){}.getClass().getEnclosingMethod().getName());
+    void testGetValidSimpleMoveBlockedByOwnPiece() {
+        System.out.println("Testing Valid Simple Moves Blocked by Own Piece...");
+        Position startPos = gameBoardModel.createPosition(3, 3); // C3 (White)
+        Position blockingPos = gameBoardModel.createPosition(2, 4); // B4 (White) - Blocks forward-left
 
-        BoardModel gameBoardModel = BoardHelperSingleton.getInstance().getBoard();
+        SerfPiece protagPiece = new SerfPiece(startPos, AbstractPiece.PEICE_TEAM.WHITE);
+        SerfPiece blockingPiece = new SerfPiece(blockingPos, AbstractPiece.PEICE_TEAM.WHITE); // Same team
 
-        SerfPiece protagPiece = new SerfPiece(new Position(3, 3), AbstractPiece.PEICE_TEAM.WHITE);
+        gameBoardModel.placePiece(protagPiece);
+        gameBoardModel.placePiece(blockingPiece);
 
-        //Create secondary piece to check against (should return one valid position) (for now later it will return two)
-        SerfPiece antagPiece = new SerfPiece(new Position(2, 4), AbstractPiece.PEICE_TEAM.WHITE);
+        Position expectedPos = gameBoardModel.createPosition(4, 4); // D4 (Forward-Right) - Should still be valid
 
-        gameBoardModel.addPiece(protagPiece);
-        gameBoardModel.addPiece(antagPiece);
+        // Use getValidSimpleMoves
+        List<Position> validMoveSpots = protagPiece.getValidSimpleMoves(gameBoardModel);
 
-        ArrayList<Position> positions = protagPiece.getValidPositions();
+        assertNotNull(validMoveSpots, "Valid moves list should not be null.");
+        assertEquals(1, validMoveSpots.size(), "Should only have ONE available simple move when one path is blocked by own piece.");
+        assertEquals(expectedPos, validMoveSpots.get(0), "The only valid move should be D4.");
 
-        Assertions.assertEquals(1, positions.size(), "Expected only ONE available movement!");
-
-        System.out.println("Test Passed.");
-
+        System.out.println("Valid Simple Moves (Blocked by Own Piece) Test Passed.");
         gameBoardModel.printBoard();
     }
+
+    @Test
+    void testGetValidSimpleMoveBlockedByOpponentPiece() {
+        System.out.println("Testing Valid Simple Moves Blocked by Opponent Piece...");
+        Position startPos = gameBoardModel.createPosition(3, 3); // C3 (White)
+        Position blockingPos = gameBoardModel.createPosition(4, 4); // D4 (Black) - Blocks forward-right
+
+        SerfPiece protagPiece = new SerfPiece(startPos, AbstractPiece.PEICE_TEAM.WHITE);
+        SerfPiece blockingPiece = new SerfPiece(blockingPos, AbstractPiece.PEICE_TEAM.BLACK); // Opponent team
+
+        gameBoardModel.placePiece(protagPiece);
+        gameBoardModel.placePiece(blockingPiece);
+
+        Position expectedPos = gameBoardModel.createPosition(2, 4); // B4 (Forward-Left) - Should still be valid
+
+        // Use getValidSimpleMoves
+        List<Position> validMoveSpots = protagPiece.getValidSimpleMoves(gameBoardModel);
+
+        assertNotNull(validMoveSpots, "Valid moves list should not be null.");
+        assertEquals(1, validMoveSpots.size(), "Should only have ONE available simple move when one path is blocked by opponent.");
+        assertEquals(expectedPos, validMoveSpots.get(0), "The only valid move should be B4.");
+
+        System.out.println("Valid Simple Moves (Blocked by Opponent Piece) Test Passed.");
+        gameBoardModel.printBoard();
+    }
+
+    // Test for Black piece simple moves
+    @Test
+    void testBlackPieceSimpleMoves() {
+        System.out.println("Testing Black Piece Simple Moves...");
+        Position startPos = gameBoardModel.createPosition(5, 5); // E5
+        SerfPiece blackPiece = new SerfPiece(startPos, AbstractPiece.PEICE_TEAM.BLACK);
+        gameBoardModel.placePiece(blackPiece);
+
+        // Black moves forward (Y decreases)
+        Position expectedPos1 = gameBoardModel.createPosition(4, 4); // D4 (Forward-Left for Black)
+        Position expectedPos2 = gameBoardModel.createPosition(6, 4); // F4 (Forward-Right for Black)
+
+        List<Position> validMoveSpots = blackPiece.getValidSimpleMoves(gameBoardModel);
+
+        assertNotNull(validMoveSpots, "Valid moves list should not be null.");
+        assertEquals(2, validMoveSpots.size(), "Black piece at E5 on empty board should have 2 simple moves.");
+        assertTrue(validMoveSpots.contains(expectedPos1), "Valid moves should include D4.");
+        assertTrue(validMoveSpots.contains(expectedPos2), "Valid moves should include F4.");
+
+        System.out.println("Black Piece Simple Moves Test Passed.");
+        gameBoardModel.printBoard();
+    }
+
+
+    // TODO: Add tests for getValidJumpMoves in a similar fashion
+    // - Jump over opponent to empty square
+    // - No jump if landing square is occupied
+    // - No jump over own piece
+    // - No jump if intermediate square is empty
+    // - Edge cases (near board edges)
 
     @AfterAll
-    static void breakDown()
-    {
+    static void breakDown() {
         BoardHelperSingleton.getInstance().closeBoard();
+        System.out.println("Board Closed After All Tests.");
     }
-
-    /*
-    Board Setup:
-     oooooooo
-     oooooooo
-     ooooXooo
-     oooXoooo
-     oooooooo
-     */
-
-
-
-
 }
 package ModelTest;
 
-import chGameUtil.BoardHelperSingleton;
-import chModel.Checkers.Pieces.AbstractPiece;
-import chModel.Checkers.Pieces.SerfPiece;
-import chModel.Checkers.Position;
-import chModel.Math.Vector2i;
+import chkGameUtil.BoardHelperSingleton;
+import chkMVC.chModel.Checkers.BoardModel;
+import chkMVC.chModel.Checkers.Pieces.AbstractPiece;
+import chkMVC.chModel.Checkers.Pieces.SerfPiece;
+import chkMVC.chModel.Checkers.Position;
+import chkMVC.chModel.Math.Vector2i;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-;
 
 public class PieceTest {
+
+    private static BoardModel gameBoardModel;
 
     @BeforeAll
     static void init()
     {
-        BoardHelperSingleton.initialize(8);
+        gameBoardModel = new BoardModel(8);
     }
 
     @AfterEach
     void resetBoard()
     {
-        BoardHelperSingleton.getInstance().getBoard().clearBoard();
+        gameBoardModel.clearBoard();
     }
 
     @Test
     void testPieceCreation() {
-        SerfPiece newPiece = new SerfPiece(new Position(1, 1), AbstractPiece.PEICE_TEAM.WHITE);
+        SerfPiece newPiece = new SerfPiece(gameBoardModel.createPosition(1, 1), AbstractPiece.PEICE_TEAM.WHITE);
         assertNotNull(newPiece, "Piece should be created successfully.");
     }
 
     @Test
     void testPieceInitialPosition() {
-        SerfPiece piece = new SerfPiece(new Position(3, 3), AbstractPiece.PEICE_TEAM.BLACK);
+        SerfPiece piece = new SerfPiece(gameBoardModel.createPosition(3, 3), AbstractPiece.PEICE_TEAM.BLACK);
         assertEquals(3, piece.getPosition().getX());
         assertEquals(3, piece.getPosition().getY());
     }
 
     @Test
     void testPieceMovement() {
-        SerfPiece piece = new SerfPiece(new Position(2, 2), AbstractPiece.PEICE_TEAM.BLACK);
+        SerfPiece piece = new SerfPiece(gameBoardModel.createPosition(2, 2), AbstractPiece.PEICE_TEAM.BLACK);
 
         piece.move(new Vector2i(1, 1));  // Assume move() updates position
-        assertEquals(new Position(3, 3), piece.getPosition());
+        assertEquals(gameBoardModel.createPosition(3, 3), piece.getPosition());
     }
 
     @Test
     void testPieceTeamAssignment() {
-        SerfPiece whitePiece = new SerfPiece(new Position(4, 4), AbstractPiece.PEICE_TEAM.WHITE);
-        SerfPiece blackPiece = new SerfPiece(new Position(5, 5), AbstractPiece.PEICE_TEAM.BLACK);
+        SerfPiece whitePiece = new SerfPiece(gameBoardModel.createPosition(4, 4), AbstractPiece.PEICE_TEAM.WHITE);
+        SerfPiece blackPiece = new SerfPiece(gameBoardModel.createPosition(5, 5), AbstractPiece.PEICE_TEAM.BLACK);
 
         assertEquals(AbstractPiece.PEICE_TEAM.WHITE, whitePiece.getTeam());
         assertEquals(AbstractPiece.PEICE_TEAM.BLACK, blackPiece.getTeam());
@@ -1994,7 +2223,7 @@ public class PieceTest {
 
     @Test
     void testInvalidMovement() {
-        SerfPiece piece = new SerfPiece(new Position(5, 5), AbstractPiece.PEICE_TEAM.WHITE);
+        SerfPiece piece = new SerfPiece(gameBoardModel.createPosition(5, 5), AbstractPiece.PEICE_TEAM.WHITE);
 
         // Expecting IllegalArgumentException
         assertThrows(IllegalArgumentException.class, () -> {
@@ -2002,18 +2231,16 @@ public class PieceTest {
         }, "Piece should throw an exception for illegal moves.");
     }
 
-
     @AfterAll
     static void breakDown()
     {
-        BoardHelperSingleton.getInstance().closeBoard();
+        //gameBoardModel.closeBoard();
     }
 }
 package ModelTest;
 
-import chGameUtil.BoardHelperSingleton;
-import chModel.Checkers.Position;
-import chModel.Math.Vector2i;
+import chkMVC.chModel.Checkers.BoardModel;
+import chkMVC.chModel.Checkers.Position;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -2023,16 +2250,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PositionTest {
 
+    private static BoardModel gameBoardModel;
+
     @BeforeAll
     static void start()
     {
-        BoardHelperSingleton.initialize(8);
+        gameBoardModel = new BoardModel(8);
     }
 
     @Test
     void initGoodPosition()
     {
-        Position goodPosition = new Position(4, 4);
+        Position goodPosition = gameBoardModel.createPosition(4, 4);
 
         Assertions.assertTrue(goodPosition != null, " Error with position declaration!");
     }
@@ -2040,11 +2269,11 @@ public class PositionTest {
     @Test
     void testLinPositionFromInt()
     {
-        Position pA1 = Position.positionFromInt(0);
-        Assertions.assertEquals(new Position(1, 1), pA1, "Position was not expected.");
+        Position pA1 = gameBoardModel.positionFromInt(1);
+        Assertions.assertEquals(gameBoardModel.createPosition(1, 1), pA1, "Position was not expected.");
 
-        Position pH8 = Position.positionFromInt(63);
-        Assertions.assertEquals(new Position(8, 8), pH8, "Position was not expected.");
+        Position pH8 = gameBoardModel.positionFromInt(63);
+        Assertions.assertEquals(gameBoardModel.createPosition(8, 8), pH8, "Position was not expected.");
     }
 
     @Test
@@ -2052,24 +2281,23 @@ public class PositionTest {
     {
         // Expecting IllegalArgumentException
         assertThrows(IllegalArgumentException.class, () -> {
-            Position.positionFromInt(65);
+            gameBoardModel.positionFromInt(65);
         }, "Piece should throw an exception for illegal moves.");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            Position.positionFromInt(-1);
+            gameBoardModel.positionFromInt(-1);
         }, "Piece should throw an exception for illegal moves.");
     }
-
 
     @AfterAll
     static void breakDown()
     {
-        BoardHelperSingleton.getInstance().closeBoard();
+
     }
 }
 package NetworkTesting;
 
-import chNetwork.Server.ServerLogic;
+import chkNetwork.Server.ServerLogic;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -2079,7 +2307,6 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors; // For filtering/checking lists
 
 //Test Some basic functionality with the test for the network.
 public class NetworkChatTest {
@@ -2388,10 +2615,13 @@ public class NetworkChatTest {
 package NetworkTesting;
 
 
-import chNetwork.Server.ServerLogic;
+import chkNetwork.Server.ServerLogic;
 
 public class ServerClientTesting {
 
     private static ServerLogic server;
 
 }
+
+
+//Should b there

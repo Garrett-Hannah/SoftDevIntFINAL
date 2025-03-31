@@ -4,7 +4,7 @@ Project Information:
 Entry Points:
 
 **SERVER**
-Run the serverRunnerEntryPoint file in chNetwork. (this should be moved out)
+Run the serverRunnerEntryPoint file in chkNetwork. (this should be moved out)
 
 **CLIENT**
 Run the ChatWindow (simple) or the boardWindow (opens a debug board)
