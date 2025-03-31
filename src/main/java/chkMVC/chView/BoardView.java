@@ -13,9 +13,7 @@ import java.util.ArrayList;
 public class BoardView {
 
 
-
     private ClientLogic clientLogic;
-
     public JFrame frame;
     private JButton announmentButton;
     private BoardModel boardModel;

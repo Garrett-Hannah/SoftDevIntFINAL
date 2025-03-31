@@ -172,4 +172,9 @@ public class ChatWindow implements ChatView { // Implement the interface
         // Application is now running, driven by events and the listener thread...
         System.out.println("Application setup complete. GUI visible. Listening for messages.");
     }
+
+    public void promptSignin()
+    {
+
+    }
 }
